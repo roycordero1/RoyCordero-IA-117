@@ -8,8 +8,8 @@ module.exports = class Fsm {
   constructor(owner, states) {
     this._owner = owner;
     this._states = states;
-    this._current = undefined;
-    eventEmiter.register(this);
+    this._current = states[0];
+    //eventEmiter.register(this);
   }
   
   id() {
@@ -27,13 +27,13 @@ module.exports = class Fsm {
    *   - recorrer los estados y ver si alguna lo reconoce
    *   - si lo reconoce activar el estado
    */
-  onMessage(eventEmitter, event) {    
-    if (event.msg === "update") {
+  onMessage(eventEmitter, event) {
+    if (event.msg === "update") {      
       if (this._current) {
         this._current.onUpdate(eventEmitter, this);
       }
     } else {
-      const state = this._states.find((s) => s.accepts(event));
+      const state = this._states.find((s) => s.accepts(event, this._current));
       const accepted = state && state !== this._current;
       if (accepted) {
         if (this._current) {

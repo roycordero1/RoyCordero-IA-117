@@ -20,7 +20,7 @@ module.exports = (() => {
     update() {
       console.log(`[Update] EventEmitter ${this._queue.length}`);
       for(;this._queue.length > 0;) {
-        this._queue.shift()();
+        this._queue.shift()();        
       }
     }
     /**
@@ -28,7 +28,7 @@ module.exports = (() => {
      */
     register(listener) {
       this._listenersById.set(listener.id(), listener);
-      this._listeners.push(listener);
+      this._listeners.push(listener);      
     }
     /**
      * Enviar mensaje, 
@@ -69,7 +69,7 @@ module.exports = (() => {
      */
     _sendToAll(event) {
       const self = this;
-      this._addToQueue(() => {
+      this._addToQueue(() => {        
         self._listeners.forEach((l) => l.onMessage(this, event))
       });
     }

@@ -9,8 +9,7 @@ module.exports = class State {
   /**
    * Si el estado reconoce el mensaje regresa verdadero.
    */
-  accepts(event) {
-    return false;
+  accepts(event, current) {    
   }
   /**
    * El estado toma una decicion en base al mensaje q llego
