@@ -11,13 +11,27 @@ import java.util.ArrayList;
 public class Aplicacion {
     
     private static Aplicacion aplicacion = null;
-    private ArrayList<ArrayList<Character>> Matriz = new ArrayList<>();
+    private static ArrayList<ArrayList<Character>> Matriz = new ArrayList<>();
+    private static int animar = 0;
+    public static boolean cambio = false;
     
     //El constructor se omite, se está usando el patrón de diseño Singleton    
     public static Aplicacion getAplicacion() {
         if (aplicacion == null)
             aplicacion = new Aplicacion();
         return aplicacion;
+    }
+    
+    public static int getAnimar() {
+        return animar;
+    }
+    
+    public static void setAnimar(int pAnimar) {
+        animar = pAnimar;
+    }
+    
+    public static ArrayList<ArrayList<Character>> getMatriz() {
+        return Matriz;
     }
     
     //Lee mapa del txt y almacena en variable Matriz
@@ -33,5 +47,14 @@ public class Aplicacion {
                 Matriz.add(temp);
             }
         }        
+    }
+    
+    public void imprimirMatriz() {
+        for(int i=0; i<Matriz.size(); i++) {
+            for(int j=0; j<Matriz.get(i).size(); j++) {
+                System.out.print(Matriz.get(i).get(j));
+            }
+            System.out.println();
+        }
     }
 }
