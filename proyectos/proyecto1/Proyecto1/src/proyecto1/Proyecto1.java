@@ -11,14 +11,11 @@ public class Proyecto1 {
     public static void main(String[] args) throws IOException {
         String filePath = new File("src/proyecto1/files/mapa.txt").getAbsolutePath();
         Aplicacion.getAplicacion().leerArchivo(filePath);
+        Aplicacion.getAplicacion().crearInstrucciones();
+        Aplicacion.getAplicacion().crearThread();
         
-        Aplicacion.getAplicacion().imprimirMatriz();
+        //Se crea thread de impresión constante del mapa        
         
-        /*
-        MyThread myThread = new MyThread();
-        myThread.start();        
-        System.out.println("Out of the thread");
-        */
+        
     }
-    
 }
