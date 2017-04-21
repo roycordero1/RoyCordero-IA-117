@@ -13,13 +13,16 @@ import java.util.logging.Logger;
 public class Aplicacion {
     
     private static Aplicacion aplicacion = null;
-    private static ArrayList<ArrayList<Character>> Matriz = new ArrayList<>();
+    public static Mapa mapa;
     private static Instrucciones instrucciones;
-    private static MyThread threadImprimir;
+    private static PrintThread threadImprimir;
+    private static ExecThread threadExec;
     private static int animar = 0;
     public static boolean salir = false;
     public static boolean correr = false;
+    public static boolean pasear = false;
     static Semaphore mutex1= new Semaphore(1);
+    public static String instrActual = "";
     
     //El constructor se omite, se está usando el patrón de diseño Singleton    
     public static Aplicacion getAplicacion() {
@@ -43,7 +46,7 @@ public class Aplicacion {
     }
     
     public static ArrayList<ArrayList<Character>> getMatriz() {
-        return Matriz;
+        return mapa.getMatriz();
     }
     /*----------------------------------------------------*/
     
@@ -59,14 +62,26 @@ public class Aplicacion {
     
     //Crea pantalla para enviar instrucciones a la aplicación
     public void crearThread() {
-        threadImprimir = new MyThread();
+        threadImprimir = new PrintThread();
+        threadExec = new ExecThread();
         threadImprimir.start();
-    }    
+        threadExec.start();
+    }
+    
+    //Crea objeto de mapa
+    public void crearMapa() {
+        mapa = new Mapa();        
+    }
     
     //Recibe instruccion ingresada y la valida
     public int seleccionarInstruccion(String pInstruccion, String pParam1, String pParam2) {
         if ("animar".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
             animar(pParam1);
+            return 1;
+        }
+        if ("pasear".equals(pInstruccion) && "".equals(pParam1) && "".equals(pParam2)) {
+            pasear = true;
+            instrActual = "pasear";            
             return 1;
         }
         else {
@@ -75,10 +90,10 @@ public class Aplicacion {
     }
     
     private void animar(String pParam1) {
-        System.out.println("Entro animar");
+        //System.out.println("Entro animar");
         int pAnimar = Integer.parseInt(pParam1);
         if (!(pAnimar == getAnimar()) && pAnimar != 0) {
-            System.out.println("Animando");
+            //System.out.println("Animando");
             setAnimar(pAnimar);
             try {
                 mutex1.acquire();
@@ -89,7 +104,7 @@ public class Aplicacion {
             mutex1.release();
         }
         if (pAnimar == 0) {
-            System.out.println("No animando");
+            //System.out.println("No animando");
             setAnimar(pAnimar);
             try {
                 mutex1.acquire();
@@ -99,12 +114,13 @@ public class Aplicacion {
             correr = false;
             mutex1.release();
         }
-        System.out.println("Salio animar");
-    }
+        //System.out.println("Salio animar");
+    }        
     
     //Lee mapa del txt y almacena en variable Matriz
     public void leerArchivo(String pRuta) throws FileNotFoundException, IOException {
         String cadena;
+        ArrayList<ArrayList<Character>> tempMatriz = new ArrayList<>();
         FileReader f = new FileReader(pRuta);
         try (BufferedReader b = new BufferedReader(f)) {
             while((cadena = b.readLine()) != null) {
@@ -112,15 +128,17 @@ public class Aplicacion {
                 for(int j=0; j<cadena.length(); j++) {
                     temp.add(cadena.charAt(j));
                 }
-                Matriz.add(temp);
+                tempMatriz.add(temp);
             }
-        }        
+        }
+        mapa.setMatriz(tempMatriz);
     }
     
     public void imprimirMatriz() {
-        for(int i=0; i<Matriz.size(); i++) {
-            for(int j=0; j<Matriz.get(i).size(); j++) {
-                System.out.print(Matriz.get(i).get(j));
+        ArrayList<ArrayList<Character>> tempMatriz = mapa.getMatriz();
+        for(int i=0; i<tempMatriz.size(); i++) {
+            for(int j=0; j<tempMatriz.get(i).size(); j++) {
+                System.out.print(tempMatriz.get(i).get(j));
             }
             System.out.println();
         }
