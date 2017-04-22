@@ -22,9 +22,20 @@ public class Instrucciones extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jLabel1.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
         jLabel1.setText("Ingrese la instrucción y presione el botón");
 
         jTextField1.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -33,6 +44,7 @@ public class Instrucciones extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
         jButton1.setText("Ejecutar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -40,33 +52,104 @@ public class Instrucciones extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
         jLabel2.setText("Label para errores");
+
+        jLabel3.setFont(new java.awt.Font("Lucida Sans Unicode", 0, 18)); // NOI18N
+        jLabel3.setText("Bienvenido");
+
+        jLabel4.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel4.setText("Instrucciones permitidas:");
+
+        jLabel5.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel5.setText("animar N (animacion cada N ms, N=0 detiene)");
+
+        jLabel6.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel6.setText("pasear (taxi pasea por la ciudad)");
+
+        jLabel7.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel7.setText("buscar (taxi pasea buscando clientes)");
+
+        jLabel8.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel8.setText("parquear C (taxi va a cuadra C y espera)");
+
+        jLabel9.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel9.setText("cliente C1 C2 (agrega cliente en C1 con destino C2)");
+
+        jLabel10.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel10.setText("clientes N (agrega N clientes en cuadra y destino aleatorio)");
+
+        jLabel11.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel11.setText("mostrar [on/off] (Muestra/Oculta camino recorrido)");
+
+        jLabel12.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
+        jLabel12.setText("ruta [on/off] (Muestra/Oculta ruta óptima a seguir)");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel2))
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(125, 125, 125)
+                        .addComponent(jLabel3))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel8)
+                                    .addComponent(jLabel9)
+                                    .addComponent(jLabel10)
+                                    .addComponent(jLabel11)
+                                    .addComponent(jLabel12))))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel11)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel12)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addContainerGap())
         );
@@ -82,21 +165,21 @@ public class Instrucciones extends javax.swing.JFrame {
         int esValido = 0;        
         switch (tokens.length) {
             case 1:
-                System.out.println("Case 1");
-                System.out.println(tokens[0]);
+                //System.out.println("Case 1");
+                //System.out.println(tokens[0]);
                 esValido = Aplicacion.getAplicacion().seleccionarInstruccion(tokens[0], "", "");
                 break;
             case 2:
-                System.out.println("Case 2");
-                System.out.println(tokens[0]);
-                System.out.println(tokens[1]);
+                //System.out.println("Case 2");
+                //System.out.println(tokens[0]);
+                //System.out.println(tokens[1]);
                 esValido = Aplicacion.getAplicacion().seleccionarInstruccion(tokens[0], tokens[1], "");
                 break;
             case 3:
-                System.out.println("Case 3");
-                System.out.println(tokens[0]);
-                System.out.println(tokens[1]);
-                System.out.println(tokens[2]);
+                //System.out.println("Case 3");
+                //System.out.println(tokens[0]);
+                //System.out.println(tokens[1]);
+                //System.out.println(tokens[2]);
                 esValido = Aplicacion.getAplicacion().seleccionarInstruccion(tokens[0], tokens[1], tokens[2]);
                 break;
         }
@@ -118,7 +201,17 @@ public class Instrucciones extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

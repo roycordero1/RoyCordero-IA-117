@@ -10,7 +10,7 @@ public class ExecThread extends Thread {
             System.out.print("");
             while("pasear".equals(Aplicacion.instrActual)) {
                 //System.out.println("Entró pasear");
-                while(Aplicacion.pasear) {
+                while(Aplicacion.pasear && Aplicacion.correr) {
                     //System.out.println("Paseando");
                     Aplicacion.mapa.pasear();
                     try {

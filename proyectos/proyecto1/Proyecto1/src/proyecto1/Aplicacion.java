@@ -48,6 +48,10 @@ public class Aplicacion {
     public static ArrayList<ArrayList<Character>> getMatriz() {
         return mapa.getMatriz();
     }
+    
+    public Mapa getMapa() {
+        return mapa;
+    }
     /*----------------------------------------------------*/
     
     //Crea pantalla para enviar instrucciones a la aplicación
@@ -82,6 +86,14 @@ public class Aplicacion {
         if ("pasear".equals(pInstruccion) && "".equals(pParam1) && "".equals(pParam2)) {
             pasear = true;
             instrActual = "pasear";            
+            return 1;
+        }
+        if ("cliente".equals(pInstruccion) && !"".equals(pParam1) && !"".equals(pParam2)) {
+            mapa.agregarCliente(pParam1.charAt(0), pParam2.charAt(0));
+            return 1;
+        }
+        if ("clientes".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
+            mapa.agregarClientes(Integer.parseInt(pParam1));
             return 1;
         }
         else {
