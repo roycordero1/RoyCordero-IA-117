@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Stack;
 
 public class Mapa {
     private ArrayList<ArrayList<Character>> matriz;
     private Map<Character, int[]> cuadras = new HashMap<>();
     private Map<Integer, int[]> clientes = new HashMap<>();
     private ArrayList<int[]> cuadrasVacias = new ArrayList<>();
+    private Stack<int[]> pila = new Stack<int[]>();
     private int taxiX;
     private int taxiY;
     private int ultPosX;
@@ -227,7 +229,7 @@ public class Mapa {
                 ultMov = "abajo";
                 return;
             }
-            //Se valida posición hacia
+            //Se valida posición hacia arriba
             if(matriz.get(taxiX-1).get(taxiY) == ' ' && taxiX-1 != ultPosX) {
                 //System.out.println("Mueve arriba");
                 temp = matriz.get(taxiX);
@@ -274,6 +276,142 @@ public class Mapa {
                 ultMov = "abajo";                
             }
         }
+    }
+    
+    public void buscar() {
+        //Valida si está a la par de algún 0
+        if(matriz.get(taxiX-1).get(taxiY) == '0' || matriz.get(taxiX+1).get(taxiY) == '0' || matriz.get(taxiX).get(taxiY-1) == '0' || matriz.get(taxiX).get(taxiY+1) == '0') {
+            int clave;
+            int idCliente = -1;
+            Iterator<Integer> clientesColl = clientes.keySet().iterator();
+            while(clientesColl.hasNext()) {
+                clave = clientesColl.next();
+                //Verifica cual cliente encontró dentro de la lista de clientes
+                //Valida si el de arriba
+                if(clientes.get(clave)[0]==taxiX-1 && clientes.get(clave)[1]==taxiY) {
+                    idCliente = clave;
+                    break;
+                }
+                else {
+                    //Valida si el de abajo
+                    if(clientes.get(clave)[0]==taxiX+1 && clientes.get(clave)[1]==taxiY) {
+                        idCliente = clave;
+                        break;
+                    }
+                    else {
+                        //Valida si el de izquierda
+                        if(clientes.get(clave)[0]==taxiX && clientes.get(clave)[1]==taxiY-1) {
+                            idCliente = clave;
+                            break;
+                        }
+                        else {
+                            //Valida si el de derecha
+                            if(clientes.get(clave)[0]==taxiX && clientes.get(clave)[1]==taxiY+1) {
+                                idCliente = clave;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            llevarCliente(idCliente);
+        }
+        pasear();
+    }
+    
+    public void llevarCliente(int pIdCliente) {
+        int destinoX = clientes.get(pIdCliente)[2];
+        int destinoY = clientes.get(pIdCliente)[3];
+        int resultR, resultL, resultU, resultD;
+        
+        while(!((taxiX-1 == destinoX || taxiX+1 == destinoX) && taxiY == destinoY)) {
+            resultR = 1000;
+            resultL = 1000;
+            resultU = 1000;
+            resultD = 1000;
+            
+            //Se valida posición a la derecha
+            if(matriz.get(taxiX).get(taxiY+1) == ' ' && taxiY+1 != ultPosY) {
+                //Valida si en la posición derecha, está a la par del destino
+                if (auxEncontro(taxiX, taxiY+1, destinoX, destinoY)) {
+                    resultR = -1;
+                }
+                resultR = Math.abs(taxiX - destinoX) + Math.abs(taxiY+1 - destinoY);
+            }
+            //Se valida posición a la izquierda
+            if(matriz.get(taxiX).get(taxiY-1) == ' ' && taxiY-1 != ultPosY) {
+                //Valida si en la posición izquierda, está a la par del destino
+                if (auxEncontro(taxiX, taxiY-1, destinoX, destinoY)) {
+                    resultL = -1;
+                }
+                resultL = Math.abs(taxiX - destinoX) + Math.abs(taxiY-1 - destinoY);
+            }
+            //Se valida posición abajo
+            if(matriz.get(taxiX+1).get(taxiY) == ' ' && taxiX+1 != ultPosX) {
+                //Valida si en la posición abajo, está a la par del destino
+                if (auxEncontro(taxiX+1, taxiY, destinoX, destinoY)) {
+                    resultD = -1;
+                }
+                resultD = Math.abs(taxiX+1 - destinoX) + Math.abs(taxiY - destinoY);
+            }
+            //Se valida posición arriba
+            if(matriz.get(taxiX-1).get(taxiY) == ' ' && taxiX-1 != ultPosX) {
+                //Valida si en la posición arriba, está a la par del destino
+                if (auxEncontro(taxiX-1, taxiY, destinoX, destinoY)) {
+                    resultU = -1;
+                }
+                resultU = Math.abs(taxiX-1 - destinoX) + Math.abs(taxiY - destinoY);
+            }
+            
+            //Valida si con el siguiente mov, llega al destino
+            if(resultR == -1) {
+                int[] temp = new int[2];
+                temp[0] = taxiX;
+                temp[0] = taxiY+1;
+                pila.push(temp);
+            }
+            if(resultL == -1) {
+                int[] temp = new int[2];
+                temp[0] = taxiX;
+                temp[0] = taxiY-1;
+                pila.push(temp);
+            }
+            if(resultD == -1) {
+                int[] temp = new int[2];
+                temp[0] = taxiX+1;
+                temp[0] = taxiY;
+                pila.push(temp);
+            }
+            if(resultU == -1) {
+                int[] temp = new int[2];
+                temp[0] = taxiX-1;
+                temp[0] = taxiY;
+                pila.push(temp);
+            }
+            
+            
+        }
+    }
+    
+    //Verifica si alrededor de posición 1 está la posición 2
+    public boolean auxEncontro(int x1, int y1, int x2, int y2) {
+        //Arriba
+        if (x1+1 == x2 && y1 == y2) {
+            return true;
+        }
+        //Abajo
+        if (x1-1 == x2 && y1 == y2) {
+            return true;
+        }
+        //Izquierda
+        if (x1 == x2 && y1-1 == y2) {
+            return true;
+        }
+        //Derecja
+        if (x1 == x2 && y1+1 == y2) {
+            return true;
+        }
+        return false;
     }
     
     public void agregarCliente(Character pCuadraOrigen, Character pCuadraDest) {

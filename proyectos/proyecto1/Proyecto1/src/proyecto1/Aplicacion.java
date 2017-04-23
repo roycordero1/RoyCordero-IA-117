@@ -21,6 +21,7 @@ public class Aplicacion {
     public static boolean salir = false;
     public static boolean correr = false;
     public static boolean pasear = false;
+    public static boolean buscar = false;
     static Semaphore mutex1= new Semaphore(1);
     public static String instrActual = "";
     
@@ -86,6 +87,11 @@ public class Aplicacion {
         if ("pasear".equals(pInstruccion) && "".equals(pParam1) && "".equals(pParam2)) {
             pasear = true;
             instrActual = "pasear";            
+            return 1;
+        }
+        if ("buscar".equals(pInstruccion) && "".equals(pParam1) && "".equals(pParam2)) {
+            buscar = true;
+            instrActual = "buscar";
             return 1;
         }
         if ("cliente".equals(pInstruccion) && !"".equals(pParam1) && !"".equals(pParam2)) {

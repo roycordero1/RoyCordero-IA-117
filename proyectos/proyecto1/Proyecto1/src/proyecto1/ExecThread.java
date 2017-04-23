@@ -20,6 +20,18 @@ public class ExecThread extends Thread {
                     }
                 }
             }
+            while("buscar".equals(Aplicacion.instrActual)) {
+                //System.out.println("Entró pasear");
+                while(Aplicacion.buscar && Aplicacion.correr) {
+                    //System.out.println("Paseando");
+                    Aplicacion.mapa.buscar();
+                    try {
+                        sleep(Aplicacion.getAnimar());
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Aplicacion.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
         }
     }
 }
