@@ -355,6 +355,11 @@ public class Mapa {
         tempFila2.set(destinoY, 'X');
         matriz.set(destinoX, tempFila2);
         
+        int[] temp = new int[2];                
+        temp[0] = taxiX;
+        temp[1] = taxiY;
+        pila.push(temp);
+        
         //Mientras no se llegue a la posición destino
         while(!auxEncontro(taxiX, taxiY, destinoX, destinoY)) {
             resultR = 1000;
@@ -405,58 +410,47 @@ public class Mapa {
                     //Heurística para cálculo de ruta
                     resultD = Math.abs(taxiX+1 - destinoX) + Math.abs(taxiY - destinoY);
                 }                
-            }            
+            }
             
-            ArrayList<Character> tempFila = new ArrayList<>();
+            int[] temp2 = new int[2];
+            temp2[0] = taxiX;
+            temp2[1] = taxiY;
+            pila.push(temp2);
+            
+            int[] temp3 = new int[2];
             boolean encontro = false;
             //Valida si con el siguiente mov, llega al destino
             if(resultR == -1) {
-                int[] temp = new int[2];                
-                temp[0] = taxiX;
-                temp[1] = taxiY;
-                pila.push(temp);
-                temp[0] = taxiX;
-                temp[1] = taxiY+1;
-                pila.push(temp);                
+                temp3[0] = taxiX;
+                temp3[1] = taxiY+1;
+                pila.push(temp3);
                 ultPosX = taxiX;
                 ultPosY = taxiY;
                 taxiY++;
                 encontro = true;
             }
             if(resultL == -1 && !encontro) {
-                int[] temp = new int[2];
-                temp[0] = taxiX;
-                temp[1] = taxiY;
-                pila.push(temp);                
-                temp[0] = taxiX;
-                temp[1] = taxiY-1;
-                pila.push(temp);
+                temp3[0] = taxiX;
+                temp3[1] = taxiY-1;
+                pila.push(temp3);
                 ultPosX = taxiX;
                 ultPosY = taxiY;
                 taxiY--;
                 encontro = true;
             }
             if(resultU == -1 && !encontro) {
-                int[] temp = new int[2];
-                temp[0] = taxiX;
-                temp[1] = taxiY;
-                pila.push(temp);
-                temp[0] = taxiX-1;
-                temp[1] = taxiY;
-                pila.push(temp);
+                temp3[0] = taxiX-1;
+                temp3[1] = taxiY;
+                pila.push(temp3);
                 ultPosX = taxiX;
                 ultPosY = taxiY;
                 taxiX--;
                 encontro = true;
             }
             if(resultD == -1 && !encontro) {
-                int[] temp = new int[2];
-                temp[0] = taxiX;
-                temp[1] = taxiY;
-                pila.push(temp);
-                temp[0] = taxiX+1;
-                temp[1] = taxiY;
-                pila.push(temp);                
+                temp3[0] = taxiX+1;
+                temp3[1] = taxiY;
+                pila.push(temp3);
                 ultPosX = taxiX;
                 ultPosY = taxiY;
                 taxiX++;
@@ -464,10 +458,6 @@ public class Mapa {
             }            
             
             if(!encontro) {
-                int[] temp = new int[2];
-                temp[0] = taxiX;
-                temp[1] = taxiY;
-                pila.push(temp);
                 
                 costoMenor = auxCostoMenor(resultR, resultL, resultU, resultD);
                 if (costoMenor == 5) {
@@ -522,21 +512,31 @@ public class Mapa {
         Stack<int[]> tempPila = new Stack<>();
         
         //Se da vuelta a la pila
-        for(int i=pila.size(); i>0; i--) {
-            tempPila.push(pila.pop());
+        tempNum = pila.pop();
+        while(!pila.empty()) {
+            tempPila.push(tempNum);
+            tempNum = pila.pop();
         }
         
         //        
         while(!tempPila.empty()) {
-            //Se borra el taxi actual
-            tempFila = matriz.get(taxiX);
-            tempFila.set(taxiY, 'G');
-            matriz.set(taxiX, tempFila);
-            //Se saca siguiente posición del taxi
             tempNum = tempPila.pop();
-            tempFila = matriz.get(tempNum[0]);
-            tempFila.set(tempNum[1], 'D');
-            matriz.set(tempNum[0], tempFila);
+            if(tempPila.empty()) {
+                tempFila = matriz.get(tempNum[0]);
+                tempFila.set(tempNum[1], 'D');
+                matriz.set(tempNum[0], tempFila);
+            }
+            else {
+                //Se borra el taxi actual
+                tempFila = matriz.get(tempNum[0]);
+                tempFila.set(tempNum[1], 'G');
+                matriz.set(tempNum[0], tempFila);
+                //Se saca siguiente posición del taxi
+                tempNum = tempPila.get(tempPila.size()-1);
+                tempFila = matriz.get(tempNum[0]);
+                tempFila.set(tempNum[1], 'D');
+                matriz.set(tempNum[0], tempFila);
+            }            
             try {
                 sleep(Aplicacion.getAnimar());
             } catch (InterruptedException ex) {
