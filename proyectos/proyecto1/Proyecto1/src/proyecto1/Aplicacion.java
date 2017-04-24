@@ -99,7 +99,16 @@ public class Aplicacion {
             return 1;
         }
         if ("clientes".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
-            mapa.agregarClientes(Integer.parseInt(pParam1));
+            if ("0".equals(pParam1)) {
+                mapa.eliminarClientes();
+            }
+            else {
+                mapa.agregarClientes(Integer.parseInt(pParam1));   
+            }
+            return 1;
+        }
+        if ("parquear".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
+            mapa.parquear(pParam1.charAt(0));
             return 1;
         }
         else {

@@ -34,6 +34,7 @@ public class Instrucciones extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setLocation(new java.awt.Point(900, 0));
 
         jLabel1.setFont(new java.awt.Font("Lucida Sans", 0, 11)); // NOI18N
         jLabel1.setText("Ingrese la instrucción y presione el botón");
