@@ -21,9 +21,9 @@ public class ExecThread extends Thread {
                 }
             }
             while("buscar".equals(Aplicacion.instrActual)) {
-                //System.out.println("Entró pasear");
+                System.out.println("Entró buscar");
                 while(Aplicacion.buscar && Aplicacion.correr) {
-                    //System.out.println("Paseando");
+                    System.out.println("Buscando");
                     Aplicacion.mapa.buscar();
                     try {
                         sleep(Aplicacion.getAnimar());

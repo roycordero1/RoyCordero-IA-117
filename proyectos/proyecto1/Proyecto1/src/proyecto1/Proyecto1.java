@@ -14,7 +14,8 @@ public class Proyecto1 {
         Aplicacion.getAplicacion().crearMapa();
         Aplicacion.getAplicacion().leerArchivo(filePath);        
         Aplicacion.getAplicacion().crearInstrucciones();
-        Aplicacion.getAplicacion().crearThread();        
+        Aplicacion.getAplicacion().crearThread();
+        Aplicacion.getAplicacion().getMapa().prueba();
         
         //Se crea thread de impresión constante del mapa        
         

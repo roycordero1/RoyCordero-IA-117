@@ -1,11 +1,14 @@
 package proyecto1;
 
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Mapa {
     private ArrayList<ArrayList<Character>> matriz;
@@ -283,30 +286,44 @@ public class Mapa {
         if(matriz.get(taxiX-1).get(taxiY) == '0' || matriz.get(taxiX+1).get(taxiY) == '0' || matriz.get(taxiX).get(taxiY-1) == '0' || matriz.get(taxiX).get(taxiY+1) == '0') {
             int clave;
             int idCliente = -1;
+            ArrayList<Character> tempFila = new ArrayList<>();
+            
             Iterator<Integer> clientesColl = clientes.keySet().iterator();
             while(clientesColl.hasNext()) {
                 clave = clientesColl.next();
                 //Verifica cual cliente encontró dentro de la lista de clientes
                 //Valida si el de arriba
                 if(clientes.get(clave)[0]==taxiX-1 && clientes.get(clave)[1]==taxiY) {
+                    tempFila = matriz.get(taxiX-1);
+                    tempFila.set(taxiY, '/');
+                    matriz.set(taxiX-1, tempFila);
                     idCliente = clave;
                     break;
                 }
                 else {
                     //Valida si el de abajo
                     if(clientes.get(clave)[0]==taxiX+1 && clientes.get(clave)[1]==taxiY) {
+                        tempFila = matriz.get(taxiX+1);
+                        tempFila.set(taxiY, '/');
+                        matriz.set(taxiX+1, tempFila);
                         idCliente = clave;
                         break;
                     }
                     else {
                         //Valida si el de izquierda
                         if(clientes.get(clave)[0]==taxiX && clientes.get(clave)[1]==taxiY-1) {
+                            tempFila = matriz.get(taxiX);
+                            tempFila.set(taxiY-1, '/');
+                            matriz.set(taxiX, tempFila);
                             idCliente = clave;
                             break;
                         }
                         else {
                             //Valida si el de derecha
                             if(clientes.get(clave)[0]==taxiX && clientes.get(clave)[1]==taxiY+1) {
+                                tempFila = matriz.get(taxiX);
+                                tempFila.set(taxiY+1, '/');
+                                matriz.set(taxiX, tempFila);
                                 idCliente = clave;
                                 break;
                             }
@@ -314,17 +331,32 @@ public class Mapa {
                     }
                 }
             }
-            llevarCliente(idCliente);
+            calcularRuta(idCliente);
+            llevarCliente();
+            
+            //Se limpia cliente y destino
+            tempFila = matriz.get(clientes.get(idCliente)[0]);
+            tempFila.set(clientes.get(idCliente)[1], '-');
+            matriz.set(clientes.get(idCliente)[0], tempFila);
+            tempFila = matriz.get(clientes.get(idCliente)[2]);
+            tempFila.set(clientes.get(idCliente)[3], '-');
+            matriz.set(clientes.get(idCliente)[2], tempFila);
         }
         pasear();
     }
     
-    public void llevarCliente(int pIdCliente) {
+    public void calcularRuta(int pIdCliente) {
         int destinoX = clientes.get(pIdCliente)[2];
         int destinoY = clientes.get(pIdCliente)[3];
-        int resultR, resultL, resultU, resultD;
+        int resultR, resultL, resultU, resultD, costoMenor;
         
-        while(!((taxiX-1 == destinoX || taxiX+1 == destinoX) && taxiY == destinoY)) {
+        ArrayList<Character> tempFila2 = new ArrayList<>();
+        tempFila2 = matriz.get(destinoX);
+        tempFila2.set(destinoY, 'X');
+        matriz.set(destinoX, tempFila2);
+        
+        //Mientras no se llegue a la posición destino
+        while(!auxEncontro(taxiX, taxiY, destinoX, destinoY)) {
             resultR = 1000;
             resultL = 1000;
             resultU = 1000;
@@ -336,7 +368,10 @@ public class Mapa {
                 if (auxEncontro(taxiX, taxiY+1, destinoX, destinoY)) {
                     resultR = -1;
                 }
-                resultR = Math.abs(taxiX - destinoX) + Math.abs(taxiY+1 - destinoY);
+                else {
+                    //Heurística para cálculo de ruta
+                    resultR = Math.abs(taxiX - destinoX) + Math.abs(taxiY+1 - destinoY);
+                }                
             }
             //Se valida posición a la izquierda
             if(matriz.get(taxiX).get(taxiY-1) == ' ' && taxiY-1 != ultPosY) {
@@ -344,15 +379,10 @@ public class Mapa {
                 if (auxEncontro(taxiX, taxiY-1, destinoX, destinoY)) {
                     resultL = -1;
                 }
-                resultL = Math.abs(taxiX - destinoX) + Math.abs(taxiY-1 - destinoY);
-            }
-            //Se valida posición abajo
-            if(matriz.get(taxiX+1).get(taxiY) == ' ' && taxiX+1 != ultPosX) {
-                //Valida si en la posición abajo, está a la par del destino
-                if (auxEncontro(taxiX+1, taxiY, destinoX, destinoY)) {
-                    resultD = -1;
-                }
-                resultD = Math.abs(taxiX+1 - destinoX) + Math.abs(taxiY - destinoY);
+                else {
+                    //Heurística para cálculo de ruta
+                    resultL = Math.abs(taxiX - destinoX) + Math.abs(taxiY-1 - destinoY);
+                }                
             }
             //Se valida posición arriba
             if(matriz.get(taxiX-1).get(taxiY) == ' ' && taxiX-1 != ultPosX) {
@@ -360,46 +390,234 @@ public class Mapa {
                 if (auxEncontro(taxiX-1, taxiY, destinoX, destinoY)) {
                     resultU = -1;
                 }
-                resultU = Math.abs(taxiX-1 - destinoX) + Math.abs(taxiY - destinoY);
+                else {
+                    //Heurística para cálculo de ruta
+                    resultU = Math.abs(taxiX-1 - destinoX) + Math.abs(taxiY - destinoY);
+                }                
             }
+            //Se valida posición abajo
+            if(matriz.get(taxiX+1).get(taxiY) == ' ' && taxiX+1 != ultPosX) {
+                //Valida si en la posición abajo, está a la par del destino
+                if (auxEncontro(taxiX+1, taxiY, destinoX, destinoY)) {
+                    resultD = -1;
+                }
+                else {
+                    //Heurística para cálculo de ruta
+                    resultD = Math.abs(taxiX+1 - destinoX) + Math.abs(taxiY - destinoY);
+                }                
+            }            
             
+            ArrayList<Character> tempFila = new ArrayList<>();
+            boolean encontro = false;
             //Valida si con el siguiente mov, llega al destino
             if(resultR == -1) {
+                int[] temp = new int[2];                
+                temp[0] = taxiX;
+                temp[1] = taxiY;
+                pila.push(temp);
+                temp[0] = taxiX;
+                temp[1] = taxiY+1;
+                pila.push(temp);                
+                ultPosX = taxiX;
+                ultPosY = taxiY;
+                taxiY++;
+                encontro = true;
+            }
+            if(resultL == -1 && !encontro) {
                 int[] temp = new int[2];
                 temp[0] = taxiX;
-                temp[0] = taxiY+1;
+                temp[1] = taxiY;
+                pila.push(temp);                
+                temp[0] = taxiX;
+                temp[1] = taxiY-1;
                 pila.push(temp);
+                ultPosX = taxiX;
+                ultPosY = taxiY;
+                taxiY--;
+                encontro = true;
             }
-            if(resultL == -1) {
+            if(resultU == -1 && !encontro) {
                 int[] temp = new int[2];
                 temp[0] = taxiX;
-                temp[0] = taxiY-1;
+                temp[1] = taxiY;
                 pila.push(temp);
-            }
-            if(resultD == -1) {
-                int[] temp = new int[2];
-                temp[0] = taxiX+1;
-                temp[0] = taxiY;
-                pila.push(temp);
-            }
-            if(resultU == -1) {
-                int[] temp = new int[2];
                 temp[0] = taxiX-1;
-                temp[0] = taxiY;
+                temp[1] = taxiY;
                 pila.push(temp);
+                ultPosX = taxiX;
+                ultPosY = taxiY;
+                taxiX--;
+                encontro = true;
             }
+            if(resultD == -1 && !encontro) {
+                int[] temp = new int[2];
+                temp[0] = taxiX;
+                temp[1] = taxiY;
+                pila.push(temp);
+                temp[0] = taxiX+1;
+                temp[1] = taxiY;
+                pila.push(temp);                
+                ultPosX = taxiX;
+                ultPosY = taxiY;
+                taxiX++;
+                encontro = true;
+            }            
             
-            
+            if(!encontro) {
+                int[] temp = new int[2];
+                temp[0] = taxiX;
+                temp[1] = taxiY;
+                pila.push(temp);
+                
+                costoMenor = auxCostoMenor(resultR, resultL, resultU, resultD);
+                if (costoMenor == 5) {
+                    int costoSimul1 = auxSimular(taxiX+1, taxiY, taxiX, taxiY, destinoX, destinoY);
+                    int costoSimul2 = auxSimular(taxiX, taxiY+1, taxiX, taxiY, destinoX, destinoY);
+                    if(costoSimul1 < costoSimul2)
+                        costoMenor = 1;
+                    else
+                        costoMenor = 2;
+                }
+                if (costoMenor == 6) {
+                    int costoSimul1 = auxSimular(taxiX-1, taxiY, taxiX, taxiY, destinoX, destinoY);
+                    int costoSimul2 = auxSimular(taxiX, taxiY-1, taxiX, taxiY, destinoX, destinoY);
+                    if(costoSimul1 < costoSimul2)
+                        costoMenor = 3;
+                    else
+                        costoMenor = 4;
+                }
+                switch(costoMenor) {
+                    //Mover derecha
+                    case 2:
+                        ultPosX = taxiX;
+                        ultPosY = taxiY;
+                        taxiY++;
+                        break;
+                    //Mover izquierda
+                    case 4:
+                        ultPosX = taxiX;
+                        ultPosY = taxiY;
+                        taxiY--;
+                        break;
+                    //Mover arriba
+                    case 3:
+                        ultPosX = taxiX;
+                        ultPosY = taxiY;
+                        taxiX--;
+                        break;
+                    //Mover abajo
+                    case 1:
+                        ultPosX = taxiX;
+                        ultPosY = taxiY;
+                        taxiX++;
+                        break;
+                }
+            }            
         }
+    }
+    
+    public void llevarCliente() {
+        ArrayList<Character> tempFila = new ArrayList<>();
+        int[] tempNum = new int[2];
+        Stack<int[]> tempPila = new Stack<>();
+        
+        //Se da vuelta a la pila
+        for(int i=pila.size(); i>0; i--) {
+            tempPila.push(pila.pop());
+        }
+        
+        //        
+        while(!tempPila.empty()) {
+            //Se borra el taxi actual
+            tempFila = matriz.get(taxiX);
+            tempFila.set(taxiY, 'G');
+            matriz.set(taxiX, tempFila);
+            //Se saca siguiente posición del taxi
+            tempNum = tempPila.pop();
+            tempFila = matriz.get(tempNum[0]);
+            tempFila.set(tempNum[1], 'D');
+            matriz.set(tempNum[0], tempFila);
+            try {
+                sleep(Aplicacion.getAnimar());
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Aplicacion.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+                
+    }
+    
+    //Calcula costo menor y devuelve indicador según ganador
+    public int auxCostoMenor(int right, int left, int up, int down) {
+        int retValue1, retValue2;
+        int lower1, lower2;
+        
+        if (down <= right) {
+            if (down == right) {
+                lower1 = down;
+                retValue1 = 5;
+            }
+            else {
+                lower1 = down;
+                retValue1 = 1;
+            }            
+        }
+        else {
+            lower1 = right;
+            retValue1 = 2;
+        }
+
+        if (up <= left) {
+            if (up == left) {
+                lower2 = up;
+                retValue2 = 6;
+            }
+            else {
+                lower2 = up;
+                retValue2 = 3;
+            }            
+        }
+        else {
+            lower2 = left;
+            retValue2 = 4;
+        }
+
+        if (lower1 <= lower2)
+            return retValue1;
+        else         
+            return retValue2;
+    }
+    
+    //Calcula costo menor y devuelve dicho costo
+    public int auxCostoMenor2(int right, int left, int up, int down) {        
+        int lower1, lower2;
+        
+        if (down <= right) {            
+            lower1 = down;
+        }
+        else {
+            lower1 = right;
+        }
+
+        if (up <= left) {            
+            lower2 = up;
+        }
+        else {
+            lower2 = left;            
+        }
+
+        if (lower1 <= lower2)
+            return lower1;
+        else         
+            return lower2;
     }
     
     //Verifica si alrededor de posición 1 está la posición 2
     public boolean auxEncontro(int x1, int y1, int x2, int y2) {
-        //Arriba
+        //Abajo
         if (x1+1 == x2 && y1 == y2) {
             return true;
         }
-        //Abajo
+        //Arriba
         if (x1-1 == x2 && y1 == y2) {
             return true;
         }
@@ -407,13 +625,68 @@ public class Mapa {
         if (x1 == x2 && y1-1 == y2) {
             return true;
         }
-        //Derecja
+        //Derecha
         if (x1 == x2 && y1+1 == y2) {
             return true;
         }
         return false;
     }
     
+    //Simula calculo de costo en un paso siguiente, usada en caso de empate
+    public int auxSimular(int x1, int y1, int pUltX, int pUltY, int destinoX, int destinoY) {
+        int resultR, resultL, resultU, resultD;
+        resultR = 1000;
+        resultL = 1000;
+        resultU = 1000;
+        resultD = 1000;
+        //Se valida posición a la derecha
+        if(matriz.get(x1).get(y1+1) == ' ' && y1+1 != pUltY) {
+            //Valida si en la posición derecha, está a la par del destino
+            if (auxEncontro(x1, y1+1, destinoX, destinoY)) {
+                resultR = -1;
+            }
+            else {
+                //Heurística para cálculo de ruta
+                resultR = Math.abs(x1 - destinoX) + Math.abs(y1+1 - destinoY);
+            }                
+        }
+        //Se valida posición a la izquierda
+        if(matriz.get(x1).get(y1-1) == ' ' && y1-1 != pUltY) {
+            //Valida si en la posición izquierda, está a la par del destino
+            if (auxEncontro(x1, y1-1, destinoX, destinoY)) {
+                resultL = -1;
+            }
+            else {
+                //Heurística para cálculo de ruta
+                resultL = Math.abs(x1 - destinoX) + Math.abs(y1-1 - destinoY);
+            }                
+        }
+        //Se valida posición arriba
+        if(matriz.get(x1-1).get(y1) == ' ' && x1-1 != pUltX) {
+            //Valida si en la posición arriba, está a la par del destino
+            if (auxEncontro(x1-1, y1, destinoX, destinoY)) {
+                resultU = -1;
+            }
+            else {
+                //Heurística para cálculo de ruta
+                resultU = Math.abs(x1-1 - destinoX) + Math.abs(y1 - destinoY);
+            }                
+        }
+        //Se valida posición abajo
+        if(matriz.get(x1+1).get(y1) == ' ' && x1+1 != pUltX) {
+            //Valida si en la posición abajo, está a la par del destino
+            if (auxEncontro(x1+1, y1, destinoX, destinoY)) {
+                resultD = -1;
+            }
+            else {
+                //Heurística para cálculo de ruta
+                resultD = Math.abs(x1+1 - destinoX) + Math.abs(y1 - destinoY);
+            }                
+        }
+        return auxCostoMenor2(resultR, resultL, resultU, resultD);
+    }
+    
+    //Agrega cliente en cuadra especifica con destino especifico
     public void agregarCliente(Character pCuadraOrigen, Character pCuadraDest) {
         Random random = new Random();
         int random1;
@@ -519,6 +792,7 @@ public class Mapa {
         modifMatriz('0', temp3);
     }
     
+    //Agrega un número específico de clientes
     public void agregarClientes(int pCantidad) {
         Random random = new Random();
         int random1;
