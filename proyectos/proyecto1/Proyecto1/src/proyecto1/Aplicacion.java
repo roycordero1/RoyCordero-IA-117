@@ -22,8 +22,11 @@ public class Aplicacion {
     public static boolean correr = false;
     public static boolean pasear = false;
     public static boolean buscar = false;
+    public static boolean mostrar = false;
+    public static boolean imprimirRuta = false;
     static Semaphore mutex1= new Semaphore(1);
     public static String instrActual = "";
+    public static String param1 = "";
     
     //El constructor se omite, se está usando el patrón de diseño Singleton    
     public static Aplicacion getAplicacion() {
@@ -66,7 +69,7 @@ public class Aplicacion {
     }
     
     //Crea pantalla para enviar instrucciones a la aplicación
-    public void crearThread() {
+    public void crearThreads() {
         threadImprimir = new PrintThread();
         threadExec = new ExecThread();
         threadImprimir.start();
@@ -94,6 +97,35 @@ public class Aplicacion {
             instrActual = "buscar";
             return 1;
         }
+        if ("parquear".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
+            instrActual = "parquear";
+            param1 = pParam1;
+            return 1;
+        }
+        if ("mostrar".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
+            if("on".equals(pParam1)) {
+                mostrar = true;
+                return 1;
+            }
+            if("off".equals(pParam1)) {
+                mostrar = false;
+                mapa.auxLimpiar();
+                return 1;
+            }
+            return 0;
+        }
+        if ("ruta".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
+            if("on".equals(pParam1)) {
+                imprimirRuta = true;
+                return 1;
+            }
+            if("off".equals(pParam1)) {
+                imprimirRuta = false;
+                mapa.auxLimpiar();
+                return 1;
+            }
+            return 0;
+        }
         if ("cliente".equals(pInstruccion) && !"".equals(pParam1) && !"".equals(pParam2)) {
             mapa.agregarCliente(pParam1.charAt(0), pParam2.charAt(0));
             return 1;
@@ -106,11 +138,7 @@ public class Aplicacion {
                 mapa.agregarClientes(Integer.parseInt(pParam1));   
             }
             return 1;
-        }
-        if ("parquear".equals(pInstruccion) && !"".equals(pParam1) && "".equals(pParam2)) {
-            mapa.parquear(pParam1.charAt(0));
-            return 1;
-        }
+        }        
         else {
             return 0;
         }

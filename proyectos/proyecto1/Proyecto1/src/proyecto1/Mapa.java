@@ -69,6 +69,7 @@ public class Mapa {
         return taxiY;
     }
     
+    ////Funcion setea config de cuadras con nombre
     public void setCuadras(ArrayList<ArrayList<Character>> pMatriz) {
         //Se buscan letras, y se agrega a mapa
         //Mapa es Key: Char del nombre, Value: int[] conteniendo la posición        
@@ -85,6 +86,7 @@ public class Mapa {
         }
     }
     
+    ////Funcion setea config de cuadras sin nombre
     public void setCuadrasVacias(ArrayList<ArrayList<Character>> pMatriz) {
         //Se buscan cuadras vacias y se agregan a lista        
         for(int i=0; i<pMatriz.size(); i++) {
@@ -102,6 +104,7 @@ public class Mapa {
         }
     }
     
+    //Funcion setea config de clientes que están desde el inicio en el txt
     public void setClientes(ArrayList<ArrayList<Character>> pMatriz) {
         Random random = new Random();
         char temp3;
@@ -179,7 +182,8 @@ public class Mapa {
             System.out.println(clave2 + " " + clientes.get(clave2)[0] + ", " + clientes.get(clave2)[1] + " - " + clientes.get(clave2)[2] + ", " + clientes.get(clave2)[3]);
         }
     }    
-        
+    
+    //Funcion para que el taxi pasee
     public void pasear() {
         //System.out.println("Entro pasear en Mapa con taxi en " + taxiX + " " + taxiY);
         //Si no están seteadas, se setean las últimas posiciones como un paso a la izquierda
@@ -190,38 +194,60 @@ public class Mapa {
             ultMov = "abajo";
         }
         
+        //Si se activa funcion de mostrar, se debe desdibujar la prioridad antes de validar        
+        auxDesdibujarPrioridad();
+        
         ArrayList<Character> temp = new ArrayList<>();
         //Se valida posición a la derecha
-        if(matriz.get(taxiX).get(taxiY+1) == ' ' && taxiY+1 != ultPosY) {
+        if((matriz.get(taxiX).get(taxiY+1) == ' ' || matriz.get(taxiX).get(taxiY+1) == '*') && taxiY+1 != ultPosY) {
             //System.out.println("Mueve derecha");
             temp = matriz.get(taxiX);
-            temp.set(taxiY, ' ');
+            if(Aplicacion.mostrar)
+                temp.set(taxiY, '*');
+            else
+                temp.set(taxiY, ' ');
             temp.set(taxiY+1, 'D');
             matriz.set(taxiX, temp);
             ultPosX = taxiX;
             ultPosY = taxiY;
-            taxiY++;            
+            taxiY++;
+            //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+            if(Aplicacion.mostrar) {
+                System.out.println("Entro a dibujar!");
+                auxDibujarPrioridad();
+            }
             return;
         }
         //Se valida posición a la izquierda
-        if(matriz.get(taxiX).get(taxiY-1) == ' ' && taxiY-1 != ultPosY) {
+        if((matriz.get(taxiX).get(taxiY-1) == ' ' || matriz.get(taxiX).get(taxiY-1) == '*') && taxiY-1 != ultPosY) {
             //System.out.println("Mueve izquierda");
             temp = matriz.get(taxiX);
-            temp.set(taxiY, ' ');
+            if(Aplicacion.mostrar)
+                temp.set(taxiY, '*');
+            else
+                temp.set(taxiY, ' ');
             temp.set(taxiY-1, 'D');
             matriz.set(taxiX, temp);
             ultPosX = taxiX;
             ultPosY = taxiY;
-            taxiY--;            
+            taxiY--;
+            //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+            if(Aplicacion.mostrar) {
+                System.out.println("Entro a dibujar!");
+                auxDibujarPrioridad();
+            }
             return;
         }
         //Si ultimo movimiento fue hacia abajo, se prioriza abajo
         if ("abajo".equals(ultMov)) {
             //Se valida posición hacia abajo
-            if(matriz.get(taxiX+1).get(taxiY) == ' ' && taxiX+1 != ultPosX) {
+            if((matriz.get(taxiX+1).get(taxiY) == ' ' || matriz.get(taxiX+1).get(taxiY) == '*') && taxiX+1 != ultPosX) {
                 //System.out.println("Mueve abajo");
                 temp = matriz.get(taxiX);
-                temp.set(taxiY, ' ');
+                if(Aplicacion.mostrar)
+                    temp.set(taxiY, '*');
+                else
+                    temp.set(taxiY, ' ');
                 matriz.set(taxiX, temp);
                 temp = matriz.get(taxiX+1);
                 temp.set(taxiY, 'D');
@@ -230,13 +256,21 @@ public class Mapa {
                 ultPosY = taxiY;
                 taxiX++;
                 ultMov = "abajo";
+                //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+                if(Aplicacion.mostrar) {
+                    System.out.println("Entro a dibujar!");
+                    auxDibujarPrioridad();
+                }
                 return;
             }
             //Se valida posición hacia arriba
-            if(matriz.get(taxiX-1).get(taxiY) == ' ' && taxiX-1 != ultPosX) {
+            if((matriz.get(taxiX-1).get(taxiY) == ' ' || matriz.get(taxiX-1).get(taxiY) == '*') && taxiX-1 != ultPosX) {
                 //System.out.println("Mueve arriba");
                 temp = matriz.get(taxiX);
-                temp.set(taxiY, ' ');
+                if(Aplicacion.mostrar)
+                    temp.set(taxiY, '*');
+                else
+                    temp.set(taxiY, ' ');
                 matriz.set(taxiX, temp);
                 temp = matriz.get(taxiX-1);
                 temp.set(taxiY, 'D');
@@ -245,15 +279,23 @@ public class Mapa {
                 ultPosY = taxiY;
                 taxiX--;
                 ultMov = "arriba";
+                //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+                if(Aplicacion.mostrar) {
+                    System.out.println("Entro a dibujar!");
+                    auxDibujarPrioridad();
+                }
             }
         }
         //Si ultimo movimiento fue hacia arriba, se prioriza arriba
         else {
             //Se valida posición hacia arriba
-            if(matriz.get(taxiX-1).get(taxiY) == ' ' && taxiX-1 != ultPosX) {
+            if((matriz.get(taxiX-1).get(taxiY) == ' ' || matriz.get(taxiX-1).get(taxiY) == '*') && taxiX-1 != ultPosX) {
                 //System.out.println("Mueve arriba");
                 temp = matriz.get(taxiX);
-                temp.set(taxiY, ' ');
+                if(Aplicacion.mostrar)
+                    temp.set(taxiY, '*');
+                else
+                    temp.set(taxiY, ' ');                
                 matriz.set(taxiX, temp);
                 temp = matriz.get(taxiX-1);
                 temp.set(taxiY, 'D');
@@ -262,13 +304,21 @@ public class Mapa {
                 ultPosY = taxiY;
                 taxiX--;
                 ultMov = "arriba";
+                //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+                if(Aplicacion.mostrar) {
+                    System.out.println("Entro a dibujar!");
+                    auxDibujarPrioridad();
+                }
                 return;
             }
             //Se valida posición hacia abajo
-            if(matriz.get(taxiX+1).get(taxiY) == ' ' && taxiX+1 != ultPosX) {
+            if((matriz.get(taxiX+1).get(taxiY) == ' ' || matriz.get(taxiX+1).get(taxiY) == '*') && taxiX+1 != ultPosX) {
                 //System.out.println("Mueve abajo");
                 temp = matriz.get(taxiX);
-                temp.set(taxiY, ' ');
+                if(Aplicacion.mostrar)
+                    temp.set(taxiY, '*');
+                else
+                    temp.set(taxiY, ' ');
                 matriz.set(taxiX, temp);
                 temp = matriz.get(taxiX+1);
                 temp.set(taxiY, 'D');
@@ -276,11 +326,122 @@ public class Mapa {
                 ultPosX = taxiX;
                 ultPosY = taxiY;
                 taxiX++;
-                ultMov = "abajo";                
+                ultMov = "abajo";
+                //Si se activa funcion de mostrar, se debe dibujar la prioridad antes de validar
+                if(Aplicacion.mostrar) {
+                    System.out.println("Entro a dibujar!");
+                    auxDibujarPrioridad();
+                }
             }
         }
     }
     
+    public void auxDibujarPrioridad() {
+        ArrayList<Character> temp = new ArrayList<>();
+        //Se valida posición a la derecha
+        if((matriz.get(taxiX).get(taxiY+1) == ' ' || matriz.get(taxiX).get(taxiY+1) == '*') && taxiY+1 != ultPosY) {
+            temp = matriz.get(taxiX);
+            temp.set(taxiY+1, '1');
+            matriz.set(taxiX, temp);
+        }
+        //Se valida posición a la izquierda
+        if((matriz.get(taxiX).get(taxiY-1) == ' ' || matriz.get(taxiX).get(taxiY-1) == '*') && taxiY-1 != ultPosY) {
+            temp = matriz.get(taxiX);
+            temp.set(taxiY-1, '2');
+            matriz.set(taxiX, temp);
+        }
+        //Si ultimo movimiento fue hacia abajo, se prioriza abajo
+        if ("abajo".equals(ultMov)) {
+            //Se valida posición hacia abajo
+            if((matriz.get(taxiX+1).get(taxiY) == ' ' || matriz.get(taxiX+1).get(taxiY) == '*') && taxiX+1 != ultPosX) {
+                temp = matriz.get(taxiX+1);
+                temp.set(taxiY, '3');
+                matriz.set(taxiX+1, temp);
+            }
+            //Se valida posición hacia arriba
+            if((matriz.get(taxiX-1).get(taxiY) == ' ' || matriz.get(taxiX-1).get(taxiY) == '*') && taxiX-1 != ultPosX) {
+                temp = matriz.get(taxiX-1);
+                temp.set(taxiY, '4');
+                matriz.set(taxiX-1, temp);
+            }
+        }
+        //Si ultimo movimiento fue hacia arriba, se prioriza arriba
+        else {
+            //Se valida posición hacia arriba
+            if((matriz.get(taxiX-1).get(taxiY) == ' ' || matriz.get(taxiX-1).get(taxiY) == '*') && taxiX-1 != ultPosX) {
+                temp = matriz.get(taxiX-1);
+                temp.set(taxiY, '3');
+                matriz.set(taxiX-1, temp);
+            }
+            //Se valida posición hacia abajo
+            if((matriz.get(taxiX+1).get(taxiY) == ' ' || matriz.get(taxiX+1).get(taxiY) == '*') && taxiX+1 != ultPosX) {
+                temp = matriz.get(taxiX+1);
+                temp.set(taxiY, '4');
+                matriz.set(taxiX+1, temp);
+            }
+        }
+    }
+    
+    public void auxDesdibujarPrioridad() {
+        ArrayList<Character> temp = new ArrayList<>();
+        //Se valida posición a la derecha
+        if(matriz.get(taxiX).get(taxiY+1) == '1') {
+            temp = matriz.get(taxiX);
+            temp.set(taxiY+1, ' ');
+            matriz.set(taxiX, temp);
+        }
+        //Se valida posición a la izquierda
+        if(matriz.get(taxiX).get(taxiY-1) == '2') {
+            temp = matriz.get(taxiX);
+            temp.set(taxiY-1, ' ');
+            matriz.set(taxiX, temp);
+        }
+        //Si ultimo movimiento fue hacia abajo, se prioriza abajo
+        if ("abajo".equals(ultMov)) {
+            //Se valida posición hacia abajo
+            if(matriz.get(taxiX+1).get(taxiY) == '3') {
+                temp = matriz.get(taxiX+1);
+                temp.set(taxiY, ' ');
+                matriz.set(taxiX+1, temp);
+            }
+            //Se valida posición hacia arriba
+            if(matriz.get(taxiX-1).get(taxiY) == '4') {
+                temp = matriz.get(taxiX-1);
+                temp.set(taxiY, ' ');
+                matriz.set(taxiX-1, temp);
+            }
+        }
+        //Si ultimo movimiento fue hacia arriba, se prioriza arriba
+        else {
+            //Se valida posición hacia arriba
+            if(matriz.get(taxiX-1).get(taxiY) == '3') {
+                temp = matriz.get(taxiX-1);
+                temp.set(taxiY, ' ');
+                matriz.set(taxiX-1, temp);
+            }
+            //Se valida posición hacia abajo
+            if(matriz.get(taxiX+1).get(taxiY) == '4') {
+                temp = matriz.get(taxiX+1);
+                temp.set(taxiY, ' ');
+                matriz.set(taxiX+1, temp);
+            }
+        }
+    }
+    
+    public void auxLimpiar() {
+        ArrayList<Character> temp = new ArrayList<>();
+        for(int i=0; i<matriz.size(); i++) {
+            for(int j=0; j<matriz.get(i).size(); j++) {
+                if(matriz.get(i).get(j) == '*' || matriz.get(i).get(j) == '&') {
+                    temp = matriz.get(i);
+                    temp.set(j, ' ');
+                    matriz.set(i, temp);
+                }
+            }
+        }
+    }
+    
+    //Funcion para que el taxi busque clientes y los lleve
     public void buscar() {
         //Valida si está a la par de algún 0
         if(matriz.get(taxiX-1).get(taxiY) == '0' || matriz.get(taxiX+1).get(taxiY) == '0' || matriz.get(taxiX).get(taxiY-1) == '0' || matriz.get(taxiX).get(taxiY+1) == '0') {
@@ -347,6 +508,7 @@ public class Mapa {
         pasear();
     }
     
+    //Funcion para llevar taxi a parquear a alguna cuadra
     public void parquear(Character pCuadra) {
         Random random = new Random();
         int random1;
@@ -571,9 +733,14 @@ public class Mapa {
             tempNum = pila.pop();
         }
         
-        //        
+        //Se recorre pila auxiliar, imprimiendo movimientos
         while(!tempPila.empty()) {
             tempNum = tempPila.pop();
+            if(Aplicacion.imprimirRuta) {
+                Stack<int[]> tempPila2 = tempPila;
+                imprimirRuta(tempPila2);
+                Aplicacion.imprimirRuta = false;
+            }
             if(tempPila.empty()) {
                 tempFila = matriz.get(tempNum[0]);
                 tempFila.set(tempNum[1], 'D');
@@ -582,7 +749,10 @@ public class Mapa {
             else {
                 //Se borra el taxi actual
                 tempFila = matriz.get(tempNum[0]);
-                tempFila.set(tempNum[1], 'G');
+                if(Aplicacion.mostrar)
+                    tempFila.set(tempNum[1], '*');
+                else
+                    tempFila.set(tempNum[1], ' ');
                 matriz.set(tempNum[0], tempFila);
                 //Se saca siguiente posición del taxi
                 tempNum = tempPila.get(tempPila.size()-1);
@@ -596,7 +766,23 @@ public class Mapa {
                 Logger.getLogger(Aplicacion.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-                
+        //Si estaba moviendose a parquear, setea la instruccion como vacia
+        if("parquear".equals(Aplicacion.instrActual)) {
+            Aplicacion.instrActual = "";
+        }
+    }
+    
+    public void imprimirRuta(Stack<int[]> pPila) {
+        int[] tempNum = new int[2];
+        ArrayList<Character> tempFila = new ArrayList<>();
+        
+        //Imprime la ruta con +
+        for (int i=0; i<pPila.size(); i++) {
+            tempNum = pPila.elementAt(i);
+            tempFila = matriz.get(tempNum[0]);            
+            tempFila.set(tempNum[1], '&');
+            matriz.set(tempNum[0], tempFila);
+        }
     }
     
     //Calcula costo menor y devuelve indicador según ganador

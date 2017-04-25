@@ -11,7 +11,7 @@ public class ExecThread extends Thread {
             while("pasear".equals(Aplicacion.instrActual)) {
                 //System.out.println("Entró pasear");
                 while(Aplicacion.pasear && Aplicacion.correr) {
-                    //System.out.println("Paseando");
+                    System.out.println("Paseando...");
                     Aplicacion.mapa.pasear();
                     try {
                         sleep(Aplicacion.getAnimar());
@@ -21,9 +21,8 @@ public class ExecThread extends Thread {
                 }
             }
             while("buscar".equals(Aplicacion.instrActual)) {
-                System.out.println("Entró buscar");
                 while(Aplicacion.buscar && Aplicacion.correr) {
-                    System.out.println("Buscando");
+                    System.out.println("Buscando...");
                     Aplicacion.mapa.buscar();
                     try {
                         sleep(Aplicacion.getAnimar());
@@ -31,6 +30,9 @@ public class ExecThread extends Thread {
                         Logger.getLogger(Aplicacion.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+            }
+            if("parquear".equals(Aplicacion.instrActual)) {
+                Aplicacion.mapa.parquear(Aplicacion.param1.charAt(0));
             }
         }
     }
