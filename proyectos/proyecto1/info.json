@@ -1,9 +1,9 @@
 {
   "main": "Proyecto1.java",
-  "url": "",
+  "url": "proyectos/proyecto1",
   "languaje": "Java",
   "onTime": "si",
-  "score": "",
+  "score": "0",
   "honor-code": "La informacion es correcta y se ajusta al codigo de honor y reglamentos establecidos",
   "grupo": [2013008314]
 }
