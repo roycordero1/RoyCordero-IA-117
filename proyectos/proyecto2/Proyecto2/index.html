@@ -1,0 +1,26 @@
+<!DOCTYPE html>  
+<html>  
+  <head>
+    <meta charset="utf-8">
+    <title> Karma </title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <h1> Bienvenido! </h1>
+    <p>Selecciona un archivo para cargar el mapa</p>
+    <input type="file" name="file" id="file">
+    <p>Ejecute instrucciones aquí</p>
+    <input id="input">
+    <button type="button" onclick="app.checkInstruction()">Ejecutar</button>
+    <p id="message"></p>
+    <p></p>
+    <p id="map" class="map"></p>
+  </body>
+  <script data-main="scripts/main" src="scripts/taxi.js"></script>
+  <script data-main="scripts/main" src="scripts/client.js"></script>
+  <script data-main="scripts/main" src="scripts/block.js"></script>
+  <script data-main="scripts/main" src="scripts/citymap.js"></script>
+  <script data-main="scripts/main" src="scripts/application.js"></script>
+  <script data-main="scripts/main" src="scripts/event-emiter.js"></script>
+  <script data-main="scripts/main" src="scripts/main.js"></script>
+</html>
