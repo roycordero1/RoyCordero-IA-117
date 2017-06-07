@@ -2,9 +2,7 @@
 Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
-
 var app = new Application();
-var eventEmiter = eventEmiterSingleton.getInstance();
 
 /*
 * Wait for file to read the map
@@ -14,16 +12,10 @@ document.getElementById('file').onchange = (evt) => {
   var reader = new FileReader();
   reader.onload = function(progressEvent) {
     app.loadMap(this.result);
+    app.printMap();
   };
   reader.readAsText(file);
 };
-
-setInterval(() => {
-  //eventEmiter.update();
-  //eventEmiter.send("update");
-  app.printMap();
-}, 500);
-
 
 /**
 const b1 = new Bombillo("b1");

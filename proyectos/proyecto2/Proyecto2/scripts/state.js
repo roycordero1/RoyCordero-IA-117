@@ -1,34 +1,29 @@
-"use strict";
-/**
- * Contrato de implementacion para un estado
- */
-module.exports = class State {
-  constructor() {
-  }
+/*-------------------------------------------
+Progra 2 - IA, Simulación de taxis Karma
+Roy Cordero Durán
+-------------------------------------------*/
 
-  /**
-   * Si el estado reconoce el mensaje regresa verdadero.
-   */
-  accepts(event, current) {    
-  }
-  /**
-   * El estado toma una decicion en base al mensaje q llego
-   */
-  onMessage(event) {
-  }
-  /**
-   * Se llama cada vez que el estado se activa
-   */
-  onEnter(eventEmitter, fsm) {     
-  }
-  /**
-   * Si el estado esta activo se llama con cada ciclo
-   */
-  onUpdate(eventEmitter, fsm) {     
-  }
-  /**
-   * Se llama cada vez que el estado se desactiva
-   */
-  onExit(eventEmitter, fsm) {     
-  }
+/**
+* Class State
+* For implement in the specific states
+*/
+class State {
+
+  constructor() {}
+
+  //Validate the message to accept, true if accepts the message
+  accepts(event, current) {}
+
+  //Take a decision based on message
+  onMessage(event) {}
+
+  //Action to take when state is activated
+  onEnter(eventEmitter, fsm) {}
+  
+  //Each time that cicle is the current
+  onUpdate(eventEmitter, fsm) {}
+
+  //Action to take when state is deactivated
+  onExit(eventEmitter, fsm) {}
+  
 }

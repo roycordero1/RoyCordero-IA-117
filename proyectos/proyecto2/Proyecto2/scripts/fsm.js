@@ -1,19 +1,23 @@
-"use strict";
+/*-------------------------------------------
+Progra 2 - IA, Simulación de taxis Karma
+Roy Cordero Durán
+-------------------------------------------*/
 
-const eventEmiter = require('./event-emiter');
 /**
- * Maquina de estados finita.
- */
-module.exports = class Fsm {
-  constructor(owner, states) {
+* Class Fsm
+* Manage the finite state machine functions
+*/
+class Fsm {
+
+  constructor(owner, states, fsmId) {
     this._owner = owner;
     this._states = states;
     this._current = states[0];
-    //eventEmiter.register(this);
+    this._id = this._owner.id() + fsmId;
   }
   
   id() {
-    return this._owner.id();
+    return this._id;
   }
   
   owner() {
@@ -28,7 +32,7 @@ module.exports = class Fsm {
    *   - si lo reconoce activar el estado
    */
   onMessage(eventEmitter, event) {
-    if (event.msg === "update") {      
+    if (event.msg == "update") {
       if (this._current) {
         this._current.onUpdate(eventEmitter, this);
       }

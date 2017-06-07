@@ -4,7 +4,6 @@ const State = require('./state')
 const Fsm = require('./fsm')
 const eventEmitter = require('./event-emiter')
 
-var inc = 0;
 //EFA = Elemento fuera de su área
 //EDA = Elemento en su área
 

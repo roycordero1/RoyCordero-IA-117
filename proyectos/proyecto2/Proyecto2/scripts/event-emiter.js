@@ -28,72 +28,75 @@ var eventEmiterSingleton = (() => {
 **/
 class EventEmitter {
     
-    constructor() {
-      this._listeners = [];
-      this._listenersById = new Map();
-      this._queue = [];
+  constructor() {
+    this._listeners = [];
+    this._listenersById = new Map();
+    this._queue = [];
+  }
+  /**
+   * Despachar los mensajes que esten en la cola
+   */
+  update() {
+    console.log(`[Update] EventEmitter ${this._queue.length}`);
+    for(;this._queue.length > 0;) {
+      this._queue.shift()();
     }
-    /**
-     * Despachar los mensajes que esten en la cola
-     */
-    update() {
-      console.log(`[Update] EventEmitter ${this._queue.length}`);
-      for(;this._queue.length > 0;) {
-        this._queue.shift()();
-      }
+  }
+  /**
+   * Registrar objetos con capcidad de recibir mensajes. listener.onMessage(event)
+   */
+  register(listener) {
+    console.log("Registering " + listener.id());
+    this._listenersById.set(listener.id(), listener);
+    this._listeners.push(listener);      
+  }
+  /**
+   * Enviar mensaje, 
+   * Si el id es no se especifica se envia a todos los objetos 
+   */
+  send(msg, id) {
+    this._send({
+      id: id,
+      msg: msg
+    });
+  }
+  /**
+   * processo interno para enviar el mensaje.
+   */
+  _send(event) {      
+    if (event.id) {
+      this._sendPrivateMessage(event);
+    } else {
+      this._sendToAll(event);
     }
-    /**
-     * Registrar objetos con capcidad de recibir mensajes. listener.onMessage(event)
-     */
-    register(listener) {
-      this._listenersById.set(listener.id(), listener);
-      this._listeners.push(listener);      
-    }
-    /**
-     * Enviar mensaje, 
-     * Si el id es no se especifica se envia a todos los objetos 
-     */
-    send(msg, id) {
-      this._send({
-        id: id,
-        msg: msg
-      });
-    }
-    /**
-     * processo interno para enviar el mensaje.
-     */
-    _send(event) {      
-      if (event.id) {
-        this._sendPrivateMessage(event);
-      } else {
-        this._sendToAll(event);
-      }
-    }
-    /**
-     * Enviar a un objeto especifico
-     */
-    _sendPrivateMessage(event) {
-      if (this._listenersById.has(event.id)) {
-        const self = this;
-        this._addToQueue(() => {
-          const fsm = self._listenersById.get(event.id);
-          fsm.onMessage(this, event);
-        });
-      } else {
-        console.warn(`Agente desconocido ${event.id}. Mensaje ${JSON.stringify(event)}`);
-      }
-    }
-    /**
-     * Enviar a todos los objetos
-     */
-    _sendToAll(event) {
+  }
+  /**
+   * Enviar a un objeto especifico
+   */
+  _sendPrivateMessage(event) {
+    if (this._listenersById.has(event.id)) {
       const self = this;
       this._addToQueue(() => {
-        self._listeners.forEach((l) => l.onMessage(this, event))
+        const fsm = self._listenersById.get(event.id);
+        fsm.onMessage(this, event);
       });
+    } else {
+      console.log("Agente desconocido " + event.id + "Mensaje " + JSON.stringify(event));
     }
-
-    _addToQueue(action) {
-      this._queue.push(action);
-    }    
   }
+  /**
+   * Enviar a todos los objetos
+   */
+  _sendToAll(event) {
+    const self = this;
+    this._addToQueue(() => {
+      self._listeners.forEach((l) => l.onMessage(this, event))
+    });
+  }
+
+  _addToQueue(action) {
+    this._queue.push(action);
+  }    
+}
+
+var eventEmiter = eventEmiterSingleton.getInstance();
