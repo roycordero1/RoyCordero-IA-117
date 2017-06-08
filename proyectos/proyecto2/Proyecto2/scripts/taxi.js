@@ -8,7 +8,7 @@ Roy Cordero Durán
 */
 class Stopped extends State {
   accepts(event, current) {
-    console.log("[Entra a aceptar de Stopped] " + JSON.stringify(event));
+    console.log("[Stopped] accepts " + JSON.stringify(event));
     return event.msg == "Detener";
   }
 
@@ -18,14 +18,14 @@ class Stopped extends State {
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("onUpdate Stopped");
+    console.log("[Stopped] onUpdate");
     fsm.owner().show();
   }
 }
 
 class Walking extends State {
   accepts(event, current) {
-    console.log("[Entra a aceptar de Walking] " + JSON.stringify(event));
+    console.log("[Walking] accepts " + JSON.stringify(event));
     return event.msg == "Pasear";
   }
 
@@ -34,7 +34,25 @@ class Walking extends State {
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("onUpdate Walking");
+    console.log("[Walking] onUpdate");
+    fsm.owner().show();
+    fsm.owner().walk();
+  }
+}
+
+class Searching extends State {
+  accepts(event, current) {
+    console.log("[Walking] accepts " + JSON.stringify(event));
+    return event.msg == "Pasear";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[Walking] onEnter");
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[Walking] onUpdate");
+    fsm.owner().show();
     fsm.owner().walk();
   }
 }
@@ -60,9 +78,9 @@ class Taxi {
     this._state1 = "detenido";
     this._state2 = "mostrarOff";
     this._state3 = "rutaOff";
-    const fsm1 = new Fsm(this, states1, "fsm1");
-    const fsm2 = new Fsm(this, states2, "fsm2");
-    const fsm3 = new Fsm(this, states3, "fsm3");
+    const fsm1 = new Fsm(this, states1, "fsm1-taxi");
+    const fsm2 = new Fsm(this, states2, "fsm2-taxi");
+    const fsm3 = new Fsm(this, states3, "fsm3-taxi");
     eventEmiter.register(fsm1);
     eventEmiter.register(fsm2);
     eventEmiter.register(fsm3);
@@ -93,8 +111,6 @@ class Taxi {
       move = this._auxChooseNextMove([[0, 1], [0, -1], [1, 0], [-1, 0]]);
     else
       move = this._auxChooseNextMove([[0, 1], [0, -1], [-1, 0], [1, 0]]);
-
-    console.log("move " + move);
     this._auxMakeMove(move);
 
   }
@@ -112,14 +128,6 @@ class Taxi {
     var pos3toCalc = map[taxiRow+movesList[2][0]][taxiCol+movesList[2][1]];
     var pos4toCalc = map[taxiRow+movesList[3][0]][taxiCol+movesList[3][1]];
 
-    console.log("prevPos " + this.prevPos);
-    console.log("pos " + this.pos);
-
-    console.log("isPrevPos1 " + isPrevPos1);
-    console.log("isPrevPos2 " + isPrevPos2);
-    console.log("isPrevPos3 " + isPrevPos3);
-    console.log("isPrevPos4 " + isPrevPos4);
-
     if (!isPrevPos1 && (pos1toCalc == "&nbsp" || pos1toCalc == "D"))
       return 1;
     else if (!isPrevPos2 && (pos2toCalc == "&nbsp" || pos2toCalc == "D"))
@@ -135,14 +143,12 @@ class Taxi {
   _auxMakeMove(move) {
     switch (move) {
       case 1:
-        console.log("switch " + move);
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]++;
         this._ownerMap.moveTaxi(this.prevPos, this.pos);
         break;
       case 2:
-        console.log("switch " + move);
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]--;
@@ -150,14 +156,12 @@ class Taxi {
         break;
       case 3:
         if (this._lastRowMove == "down") {
-          console.log("switch " + move + " if");
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
           this._ownerMap.moveTaxi(this.prevPos, this.pos);
         }
         else {
-          console.log("switch " + move + " else");
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
@@ -166,7 +170,6 @@ class Taxi {
         break;
       case 4:
         if (this._lastRowMove == "down") {
-          console.log("switch " + move + " if");
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
@@ -174,7 +177,6 @@ class Taxi {
           this._ownerMap.moveTaxi(this.prevPos, this.pos);
         }
         else {
-          console.log("switch " + move + " else");
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
@@ -185,6 +187,6 @@ class Taxi {
   }
 
   show() {
-    console.log("- Taxi " + this._id + " está " + this._state1 + ", " + this._state2 + " y " + this._state3);
+    console.log("+ Taxi " + this._id + " está " + this._state1 + ", " + this._state2 + " y " + this._state3);
   }
 }

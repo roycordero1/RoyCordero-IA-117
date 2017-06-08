@@ -13,7 +13,7 @@ class Fsm {
     this._owner = owner;
     this._states = states;
     this._current = states[0];
-    this._id = this._owner.id() + fsmId;
+    this._id = fsmId + this._owner.id();
   }
   
   id() {

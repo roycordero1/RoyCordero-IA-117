@@ -75,8 +75,7 @@ class Application {
   _pasearInstruction(instruction) {
     if (!instruction[1]) {
       eventEmiter.send("Pasear");
-      console.log("Pasear todos")
-    }      
+    }
     else
       eventEmiter.send("Pasear", instruction[1]);
   }
