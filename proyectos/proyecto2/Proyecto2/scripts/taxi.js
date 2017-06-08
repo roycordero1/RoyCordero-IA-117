@@ -42,16 +42,16 @@ class Walking extends State {
 
 class Searching extends State {
   accepts(event, current) {
-    console.log("[Walking] accepts " + JSON.stringify(event));
-    return event.msg == "Pasear";
+    console.log("[Searching] accepts " + JSON.stringify(event));
+    return event.msg == "Buscar";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Walking] onEnter");
+    console.log("[Searching] onEnter");
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Walking] onUpdate");
+    console.log("[Searching] onUpdate");
     fsm.owner().show();
     fsm.owner().walk();
   }
@@ -61,7 +61,7 @@ class Searching extends State {
 * Class Taxi
 * Manage taxi general functions
 */
-const states1 = [new Stopped(), new Walking()];
+const states1 = [new Stopped(), new Walking(), new Searching()];
 const states2 = [/*new showOff()*/];
 const states3 = [/*new routeOff()*/];
 
@@ -184,6 +184,10 @@ class Taxi {
           this._ownerMap.moveTaxi(this.prevPos, this.pos);
         }
     }
+  }
+
+  lookForClient() {
+
   }
 
   show() {

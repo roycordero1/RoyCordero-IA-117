@@ -13,7 +13,7 @@ class CityMap {
     this._matrix = [[""]];
     this.taxis = []
     this.clients = []
-    this.blocks = []
+    this.buildings = []
   }
 
   getMap() {
@@ -44,9 +44,11 @@ class CityMap {
         }
         else {
           this._initMapObjects(i, j);
-        }        
-      }      
+        }
+      }
     }
+    this._assignBuildingType();
+    this._assignWorkHometoClients();
   }
 
   _initMapObjects(i, j) {
@@ -56,12 +58,80 @@ class CityMap {
       this.taxis.push(taxi);
     }
     else if (this._matrix[i][j] == "0") {
-      var client = new Client(this.clients.length+1, i, j);
+      var client = new Client(this.clients.length+1, [i, j], this);
       this.clients.push(client);
     }
     else if (letras.indexOf(this._matrix[i][j], 0) != -1) {
-      var block = new Block(this.blocks.length+1, i, j);
-      this.blocks.push(block);
+      var build = new Building(this.buildings.length+1, i, j, this._matrix[i][j], this);
+      this.buildings.push(build);
+    }
+  }
+
+  _assignBuildingType() {
+    for(var i = 0; i<this.buildings.length; i++) {
+      if (i<this.buildings.length/2)
+        this.buildings[i].setBuildingType("Home");
+      else
+        this.buildings[i].setBuildingType("Work");
+    }
+  }
+
+  _assignWorkHometoClients() {
+    for(var i = 0; i<this.clients.length; i++) {
+      var buildId = this._checkClientBuild([this.clients[i].pos[0], this.clients[i].pos[1]]);
+      if (buildId != -1) {
+        var actualBuild = this.buildings[buildId].getPos();
+        var destBuild = this._chooseDestinationBuild(buildId);
+        if (this.buildings[buildId].getBuildingType() == "Home")
+          this.clients[i].setWorkHome(destBuild, actualBuild);
+        else
+          this.clients[i].setWorkHome(actualBuild, destBuild);
+      }
+      else {
+        this.clients.splice([this.clients[i].pos[0], this.clients[i].pos[1]], 1);
+      }
+    }
+  }
+
+  _checkClientBuild(pos) {
+    for(var i = 0; i<this.buildings.length; i++) {
+      for(var j = 0; j<this.buildings[i].sidewalks.length; j++) {
+        if (this.buildings[i].sidewalks[j][0] == pos[0] && this.buildings[i].sidewalks[j][0] == pos[0])
+          return i;
+      }
+    }
+    return -1;
+  }
+
+  _chooseDestinationBuild(buildId) {
+    var buildings = [];
+    if (this.buildings[buildId].getBuildingType() == "Home") {
+      for(var i = 0; i<this.buildings.length; i++) {
+        if (this.buildings[i].getBuildingType() == "Work")
+          buildings.push(this.buildings[i])
+      }
+    }
+    else {
+      for(var i = 0; i<this.buildings.length; i++) {
+        if (this.buildings[i].getBuildingType() == "Home")
+          buildings.push(this.buildings[i])
+      }
+    }
+    var random = Math.floor((Math.random() * buildings.length));
+    return buildings[random].getPos();
+  }
+
+  test1() {
+    console.log("Buildings")
+    for(var i = 0; i<this.buildings.length; i++) {
+      console.log(this.buildings[i].id() + " " + this.buildings[i].getBuildingType() + " " + this.buildings[i].buildName);
+    }
+    console.log("Clients")
+    for(var j = 0; j<this.clients.length; j++) {
+      var a = this._matrix[this.clients[j].pos[0]][this.clients[j].pos[1]];
+      var b = this._matrix[this.clients[j].home[0]][this.clients[j].home[1]];
+      var c = this._matrix[this.clients[j].work[0]][this.clients[j].work[1]];
+      console.log(this.clients[j].id() + " " + a + " " + b + " " + c);
     }
   }
 

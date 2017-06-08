@@ -46,9 +46,8 @@ class EventEmitter {
    * Registrar objetos con capcidad de recibir mensajes. listener.onMessage(event)
    */
   register(listener) {
-    console.log("Registering " + listener.id());
     this._listenersById.set(listener.id(), listener);
-    this._listeners.push(listener);      
+    this._listeners.push(listener);
   }
   /**
    * Enviar mensaje, 
