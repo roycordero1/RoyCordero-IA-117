@@ -14,7 +14,7 @@ class Stopped extends State {
 
   onEnter(eventEmitter, fsm) {
     console.log("[Stopped] onEnter");
-    fsm.owner().stopTaxi();
+    fsm.owner().setState("state1", "detenido");
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -31,6 +31,7 @@ class Walking extends State {
 
   onEnter(eventEmitter, fsm) {
     console.log("[Walking] onEnter");
+    fsm.owner().setState("state1", "paseando");
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -48,12 +49,18 @@ class Searching extends State {
 
   onEnter(eventEmitter, fsm) {
     console.log("[Searching] onEnter");
+    fsm.owner().setState("state1", "buscando");
   }
 
   onUpdate(eventEmitter, fsm) {
     console.log("[Searching] onUpdate");
     fsm.owner().show();
     fsm.owner().walk();
+    var clientPosition = fsm.owner()._lookForClient();
+    if (clientPosition != "NoClient") {
+      var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
+      //fsm.owner()._chooseBetterRoute(destinationBuild);
+    }
   }
 }
 
@@ -100,12 +107,21 @@ class Taxi {
     return this._state3;
   }
 
-  stopTaxi() {
-    this._state1 = "detenido";
+  setState(stateNumber, newState) {
+    switch(stateNumber) {
+      case "state1":
+        this._state1 = newState;
+        break;
+      case "state2":
+        this._state2 = newState;
+        break;
+      case "state3":
+        this._state3 = newState;
+        break;
+    }
   }
 
   walk() {
-    this._state1 = "paseando";
     var move;
     if (this._lastRowMove == "down")
       move = this._auxChooseNextMove([[0, 1], [0, -1], [1, 0], [-1, 0]]);
@@ -186,11 +202,42 @@ class Taxi {
     }
   }
 
-  lookForClient() {
+  _lookForClient() {
+    var map = this._ownerMap.getMap();
+    var taxiRow = this.pos[0];
+    var taxiCol = this.pos[1];
+    var clientUp = map[taxiRow-1][taxiCol] == "0"
+    var clientDown = map[taxiRow+1][taxiCol] == "0"
+    var clientLeft = map[taxiRow][taxiCol-1] == "0"
+    var clientRight = map[taxiRow][taxiCol+1] == "0"
+
+    if (clientUp)
+      return [[taxiRow-1], [taxiCol]]
+    else if (clientDown)
+      return [[taxiRow+1], [taxiCol]]
+    else if (clientLeft)
+      return [[taxiRow], [taxiCol-1]]
+    else if (clientRight)
+      return [[taxiRow], [taxiCol+1]]
+    else
+      return "NoClient"
+  }
+
+  _askClientDestinationBuild(clientPosition) {
+    var map = this._ownerMap.getMap();
+    var taxiRow = this.pos[0];
+    var taxiCol = this.pos[1];
+
+    var clientId = this._ownerMap.whichClient(clientPosition);
+    var destinationBuild = this._ownerMap.getClientDestinationBuild(clientId);
+    return destinationBuild;
+  }
+
+  _chooseBetterRoute(destinationBuild) {
 
   }
 
   show() {
-    console.log("+ Taxi " + this._id + " está " + this._state1 + ", " + this._state2 + " y " + this._state3);
+    console.log("++++ Taxi " + this._id + " está " + this._state1 + ", " + this._state2 + " y " + this._state3);
   }
 }

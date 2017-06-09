@@ -26,13 +26,23 @@ class Application {
   	var instruction = inputInstruction.split(" ");
     console.log(instruction);
   	switch (this._validateInstruction(instruction)) {
-  		case 1:
-  			document.getElementById("message").innerHTML = "Animar"
-  			this._animarInstruction(instruction[1])
+  		case "Animar":
+  			document.getElementById("message").innerHTML = "Animar " + instruction[1];
+  			this._animarInstruction(instruction[1]);
   			break;
-      case 2:
-        document.getElementById("message").innerHTML = "Pasear"
-        this._pasearInstruction(instruction)
+      case "Pasear":
+        if (instruction[1])
+          document.getElementById("message").innerHTML = "Pasear a " + instruction[1];
+        else
+          document.getElementById("message").innerHTML = "Pasear a todos";
+        this._pasearInstruction(instruction);
+        break;
+      case "Buscar":
+        if (instruction[1])
+          document.getElementById("message").innerHTML = "Buscar a " + instruction[1];
+        else
+          document.getElementById("message").innerHTML = "Buscar a todos";
+        this._buscarInstruction(instruction);
         break;
   		default:
   			document.getElementById("message").innerHTML = "Comando no válido!"
@@ -40,13 +50,13 @@ class Application {
   }
 
   _validateInstruction(instr) {
-  	if (instr[0] == "animar" && instr.length == 2 && typeof parseInt(instr[1]) == "number") {
-  		return 1;
-  	}
-    else if (instr[0] == "pasear") {
-       return 2;
-    }
-  	return 0;
+  	if (instr[0] == "animar" && instr.length == 2 && typeof parseInt(instr[1]) == "number")
+  		return "Animar";
+    else if (instr[0] == "pasear")
+      return "Pasear";
+    else if (instr[0] == "buscar")
+      return "Buscar"
+  	return "Invalid";
   }
 
   _animarInstruction(time) {
@@ -73,10 +83,16 @@ class Application {
   }
 
   _pasearInstruction(instruction) {
-    if (!instruction[1]) {
+    if (!instruction[1])
       eventEmiter.send("Pasear");
-    }
     else
       eventEmiter.send("Pasear", instruction[1]);
+  }
+
+  _buscarInstruction(instruction) {
+    if (!instruction[1])
+      eventEmiter.send("Buscar");
+    else
+      eventEmiter.send("Buscar", instruction[1]);
   }
 }

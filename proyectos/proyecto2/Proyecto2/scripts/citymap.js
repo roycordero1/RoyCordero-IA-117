@@ -47,7 +47,7 @@ class CityMap {
         }
       }
     }
-    this._assignBuildingType();
+    this._assignTypetoBuildings();
     this._assignWorkHometoClients();
   }
 
@@ -67,7 +67,7 @@ class CityMap {
     }
   }
 
-  _assignBuildingType() {
+  _assignTypetoBuildings() {
     for(var i = 0; i<this.buildings.length; i++) {
       if (i<this.buildings.length/2)
         this.buildings[i].setBuildingType("Home");
@@ -78,10 +78,10 @@ class CityMap {
 
   _assignWorkHometoClients() {
     for(var i = 0; i<this.clients.length; i++) {
-      var buildId = this._checkClientBuild([this.clients[i].pos[0], this.clients[i].pos[1]]);
+      var buildId = this._checkBuildinClientIs([this.clients[i].pos[0], this.clients[i].pos[1]]);
       if (buildId != -1) {
-        var actualBuild = this.buildings[buildId].getPos();
-        var destBuild = this._chooseDestinationBuild(buildId);
+        var actualBuild = this.buildings[buildId];
+        var destBuild = this._chooseDestinationBuildforClient(buildId);
         if (this.buildings[buildId].getBuildingType() == "Home")
           this.clients[i].setWorkHome(destBuild, actualBuild);
         else
@@ -93,7 +93,7 @@ class CityMap {
     }
   }
 
-  _checkClientBuild(pos) {
+  _checkBuildinClientIs(pos) {
     for(var i = 0; i<this.buildings.length; i++) {
       for(var j = 0; j<this.buildings[i].sidewalks.length; j++) {
         if (this.buildings[i].sidewalks[j][0] == pos[0] && this.buildings[i].sidewalks[j][0] == pos[0])
@@ -103,7 +103,7 @@ class CityMap {
     return -1;
   }
 
-  _chooseDestinationBuild(buildId) {
+  _chooseDestinationBuildforClient(buildId) {
     var buildings = [];
     if (this.buildings[buildId].getBuildingType() == "Home") {
       for(var i = 0; i<this.buildings.length; i++) {
@@ -118,21 +118,7 @@ class CityMap {
       }
     }
     var random = Math.floor((Math.random() * buildings.length));
-    return buildings[random].getPos();
-  }
-
-  test1() {
-    console.log("Buildings")
-    for(var i = 0; i<this.buildings.length; i++) {
-      console.log(this.buildings[i].id() + " " + this.buildings[i].getBuildingType() + " " + this.buildings[i].buildName);
-    }
-    console.log("Clients")
-    for(var j = 0; j<this.clients.length; j++) {
-      var a = this._matrix[this.clients[j].pos[0]][this.clients[j].pos[1]];
-      var b = this._matrix[this.clients[j].home[0]][this.clients[j].home[1]];
-      var c = this._matrix[this.clients[j].work[0]][this.clients[j].work[1]];
-      console.log(this.clients[j].id() + " " + a + " " + b + " " + c);
-    }
+    return buildings[random];
   }
 
   moveTaxi(oldPos, newPos) {
@@ -148,6 +134,36 @@ class CityMap {
     this._matrix[newPos[0]][newPos[1]] = "D";
   }
 
+  whichClient(clientPosition) {
+    for(var i = 0; i<this.clients.length; i++) {
+      if (this.clients[i].pos[0] == clientPosition[0] && this.clients[i].pos[1] == clientPosition[1])
+        return i;
+    }
+    return -1;
+  }
+
+  getClientDestinationBuild(clientId) {
+    var client = this.clients[clientId];
+    if (client.state1() == "inhome")
+      return client.getWorkBuild();
+    else
+      return client.getHomeBuild();
+  }
+
+  test1() {
+    console.log("Buildings")
+    for(var i = 0; i<this.buildings.length; i++) {
+      console.log(this.buildings[i].id() + " " + this.buildings[i].getBuildingType() + " " + this.buildings[i].buildName);
+    }
+    console.log("Clients")
+    for(var j = 0; j<this.clients.length; j++) {
+      var a = this._matrix[this.clients[j].pos[0]][this.clients[j].pos[1]];
+      var b = this._matrix[this.clients[j].home[0]][this.clients[j].home[1]];
+      var c = this._matrix[this.clients[j].work[0]][this.clients[j].work[1]];
+      console.log(this.clients[j].id() + " " + a + " " + b + " " + c);
+    }
+  }
+  //**Revisar si se usa**
   writeToMap(oldPos, newObj1, newPos, newObj2) {
     this._matrix[oldPos[0]][oldPos[1]] = newObj1;
     this._matrix[newPos[0]][newPos[1]] = newObj2;

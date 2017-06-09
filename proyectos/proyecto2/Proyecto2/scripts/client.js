@@ -9,7 +9,7 @@ Roy Cordero Durán
 class InHome extends State {
   accepts(event, current) {
     console.log("[InHome] accepts " + JSON.stringify(event));
-    return event.msg == "Buscar";
+    return false;
   }
 
   onEnter(eventEmitter, fsm) {
@@ -19,14 +19,13 @@ class InHome extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[InHome] onUpdate");
     fsm.owner().show();
-    fsm.owner().walk();
   }
 }
 
 class Working extends State {
   accepts(event, current) {
     console.log("[Working] accepts " + JSON.stringify(event));
-    return event.msg == "Pasear";
+    return false;
   }
 
   onEnter(eventEmitter, fsm) {
@@ -36,19 +35,17 @@ class Working extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Working] onUpdate");
     fsm.owner().show();
-    fsm.owner().walk();
   }
 }
 
 class Waiting extends State {
   accepts(event, current) {
     console.log("[Waiting] accepts " + JSON.stringify(event));
-    return event.msg == "Detener";
+    return false;
   }
 
   onEnter(eventEmitter, fsm) {
     console.log("[Waiting] onEnter");
-    fsm.owner().stopTaxi();
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -58,10 +55,10 @@ class Waiting extends State {
 }
 
 /*
-* Class Taxi
+* Class Client
 * Manage client general functions
 */
-const states = [new Stopped(), new Walking(), new Searching()];
+const states = [new InHome(), new Working(), new Waiting()];
 
 class Client {
 
@@ -69,8 +66,8 @@ class Client {
     this._id = id;
     this._ownerMap = ownerMap;
     this.pos = pos;
-    this.home = [];
-    this.work = [];
+    this.homeBuild = null;
+    this.workBuild = null;
 
     this._state = "inhome";
     const miFsm = new Fsm(this, states, "fsm1-cliente");
@@ -81,13 +78,21 @@ class Client {
     return this._id;
   }
 
-  state() {
+  state1() {
     return this._state;
   }
 
+  getHomeBuild() {
+    return this.homeBuild;
+  }
+
+  getWorkBuild() {
+    return this.workBuild;
+  }
+
   setWorkHome(work, home) {
-    this.work = work;
-    this.home = home;
+    this.workBuild = work;
+    this.homeBuild = home;
   }
 
   descansar() {
@@ -107,6 +112,6 @@ class Client {
   }
 
   show() {
-    console.log(`[NPC] ${this.id()} ${this.estado()}`);
+    console.log("++++ Cliente " +  this._id + " está " + this._state);
   }
 }

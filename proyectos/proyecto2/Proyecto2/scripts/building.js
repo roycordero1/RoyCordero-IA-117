@@ -22,7 +22,7 @@ class Building {
 
   id() {
     return this._id;
-  }
+  }  
 
   getPos() {
     return this.pos;
@@ -30,6 +30,10 @@ class Building {
 
   getBuildingType() {
     return this.buildingType;
+  }
+
+  getBuildingName() {
+    return this.buildName;
   }
 
   setBuildingType(buildingType) {
