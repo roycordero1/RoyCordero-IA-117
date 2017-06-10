@@ -40,6 +40,10 @@ class Building {
     this.buildingType = buildingType;
   }
 
+  getSidewalks() {
+    return this.sidewalks; 
+  }
+
   _setSidewalks() {
     for(var i = 0; i < 7; i++) {
       switch(i) {

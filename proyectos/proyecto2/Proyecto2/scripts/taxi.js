@@ -58,8 +58,10 @@ class Searching extends State {
     fsm.owner().walk();
     var clientPosition = fsm.owner()._lookForClient();
     if (clientPosition != "NoClient") {
+      console.log("Encontró cliente!")
       var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
-      //fsm.owner()._chooseBetterRoute(destinationBuild);
+      var route = fsm.owner()._chooseBetterRoute(destinationBuild);
+      fsm.owner().setRoute(route);
     }
   }
 }
@@ -119,6 +121,10 @@ class Taxi {
         this._state3 = newState;
         break;
     }
+  }
+
+  setRoute(route) {
+    this.route = route;
   }
 
   walk() {
@@ -224,17 +230,99 @@ class Taxi {
   }
 
   _askClientDestinationBuild(clientPosition) {
-    var map = this._ownerMap.getMap();
-    var taxiRow = this.pos[0];
-    var taxiCol = this.pos[1];
-
     var clientId = this._ownerMap.whichClient(clientPosition);
     var destinationBuild = this._ownerMap.getClientDestinationBuild(clientId);
     return destinationBuild;
   }
 
   _chooseBetterRoute(destinationBuild) {
+    var map = this._ownerMap.copyMap([]);
+    var taxiRow = this.pos[0];
+    var taxiCol = this.pos[1];
+    var taxiPrevRow = this.pos[0];
+    var taxiPrevCol = this.pos[1];
+    var betterSidewalkId = this._chooseSidewalkDestination(destinationBuild);
+    var sidewalk = destinationBuild.getSidewalks()[betterSidewalkId];
 
+    var route = [];
+    var destReached = false;
+    var contador = 0;
+    while (!destReached && contador<100) {
+      var nextMovePos = this._chooseBestMove(map, [taxiRow, taxiCol], [taxiPrevRow, taxiPrevCol], sidewalk);
+      if (this._calculateHeuristic([nextMovePos[0], nextMovePos[1]], sidewalk) == 1) {
+        destReached = true;
+        route.push(nextMovePos);
+        break;
+      }
+      map[taxiRow][taxiCol] = "&nbsp";
+      map[nextMovePos[0]][nextMovePos[1]] = "D"
+      taxiPrevRow = taxiRow;
+      taxiPrevCol = taxiCol;
+      taxiRow = nextMovePos[0]
+      taxiCol = nextMovePos[1]
+      route.push(nextMovePos);
+      contador++;
+    }
+    return route;
+  }
+
+  _chooseSidewalkDestination(destinationBuild) {
+    var sidewalks = destinationBuild.getSidewalks();
+    var betterSidewalkId = -1;
+    var bestScore = 1000;
+    for (var i = 0; i<sidewalks.length; i++) {
+      var score = this._calculateHeuristic([this.pos[0], this.pos[1]], [sidewalks[i][0], sidewalks[i][1]]);
+      if (score < bestScore) {
+        bestScore = score;
+        betterSidewalkId = i;
+      }
+    }
+    return betterSidewalkId;
+  }
+
+  _chooseBestMove(map, taxiPos, taxiPrevPos, destPos) {
+    var taxiRow = taxiPos[0];
+    var taxiCol = taxiPos[1];
+    var bestScore = 1000;
+    var nextMove = [];
+    var isPrevPosR = taxiRow == taxiPrevPos[0] && taxiCol+1 == taxiPrevPos[1];
+    var isPrevPosL = taxiRow == taxiPrevPos[0] && taxiCol-1 == taxiPrevPos[1];
+    var isPrevPosD = taxiRow+1 == taxiPrevPos[0] && taxiCol == taxiPrevPos[1];
+    var isPrevPosU = taxiRow-1 == taxiPrevPos[0] && taxiCol == taxiPrevPos[1];
+
+    if (!isPrevPosR && (map[taxiRow][taxiCol+1] == "&nbsp" || map[taxiRow][taxiCol+1] == "D")) {
+      var score = this._calculateHeuristic([taxiRow, taxiCol+1], [destPos[0], destPos[1]]);
+      if (score < bestScore) {
+        bestScore = score;
+        nextMove = [taxiRow, taxiCol+1];
+      }
+    }
+    if (!isPrevPosL && (map[taxiRow][taxiCol-1] == "&nbsp" || map[taxiRow][taxiCol-1] == "D")) {
+      var score = this._calculateHeuristic([taxiRow, taxiCol-1], [destPos[0], destPos[1]]);
+      if (score < bestScore) {
+        bestScore = score;
+        nextMove = [taxiRow, taxiCol-1];
+      }
+    }
+    if (!isPrevPosD && (map[taxiRow+1][taxiCol] == "&nbsp" || map[taxiRow+1][taxiCol] == "D")) {
+      var score = this._calculateHeuristic([taxiRow+1, taxiCol], [destPos[0], destPos[1]]);
+      if (score < bestScore) {
+        bestScore = score;
+        nextMove = [taxiRow+1, taxiCol];
+      }
+    }
+    if (!isPrevPosU && (map[taxiRow-1][taxiCol] == "&nbsp" || map[taxiRow-1][taxiCol] == "D")) {
+      var score = this._calculateHeuristic([taxiRow-1, taxiCol], [destPos[0], destPos[1]]);
+      if (score < bestScore) {
+        bestScore = score;
+        nextMove = [taxiRow-1, taxiCol];
+      }
+    }
+    return nextMove;
+  }
+
+  _calculateHeuristic(pos1, pos2) {
+    return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]);
   }
 
   show() {

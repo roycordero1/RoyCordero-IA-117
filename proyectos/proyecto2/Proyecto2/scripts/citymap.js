@@ -20,6 +20,16 @@ class CityMap {
     return this._matrix;
   }
 
+  copyMap(map) {
+    for (var i = 0; i<this._matrix.length; i++) {
+      map.push([]);
+      for (var j = 0; j<this._matrix[i].length; j++) {
+        map[i].push(this._matrix[i][j]);
+      }
+    }
+    return map;
+  }
+
   loadMap(fileMap) {
     this._createMatrix(fileMap);
   }
