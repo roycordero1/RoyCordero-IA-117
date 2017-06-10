@@ -98,7 +98,7 @@ class CityMap {
           this.clients[i].setWorkHome(actualBuild, destBuild);
       }
       else {
-        this.clients.splice([this.clients[i].pos[0], this.clients[i].pos[1]], 1);
+        this.clients.splice(i, 1);
       }
     }
   }
@@ -158,6 +158,23 @@ class CityMap {
       return client.getWorkBuild();
     else
       return client.getHomeBuild();
+  }
+
+  writeClientOriginDest(originPos, destPos) {
+    this._matrix[originPos[0]][originPos[1]] = "(";
+    this._matrix[destPos[0]][destPos[1]] = ")";
+  }
+
+  unwriteClientOriginDest(originPos, destPos) {
+    if(this._matrix[originPos[0]-1][originPos[1]] == "-")
+      this._matrix[originPos[0]][originPos[1]] = "|";
+    else
+      this._matrix[originPos[0]][originPos[1]] = "-";
+
+    if(this._matrix[destPos[0]-1][destPos[1]] == "-")
+      this._matrix[destPos[0]][destPos[1]] = "|";
+    else
+      this._matrix[destPos[0]][destPos[1]] = "-";
   }
 
   test1() {

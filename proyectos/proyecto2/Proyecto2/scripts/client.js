@@ -9,11 +9,12 @@ Roy Cordero Durán
 class InHome extends State {
   accepts(event, current) {
     console.log("[InHome] accepts " + JSON.stringify(event));
-    return false;
+    return event.msg == "Encasa";
   }
 
   onEnter(eventEmitter, fsm) {
     console.log("[InHome] onEnter");
+    fsm.owner().atHome();
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -25,11 +26,12 @@ class InHome extends State {
 class Working extends State {
   accepts(event, current) {
     console.log("[Working] accepts " + JSON.stringify(event));
-    return false;
+    return event.msg == "Trabajar";
   }
 
   onEnter(eventEmitter, fsm) {
     console.log("[Working] onEnter");
+    fsm.owner().work();
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -69,7 +71,7 @@ class Client {
     this.homeBuild = null;
     this.workBuild = null;
 
-    this._state = "inhome";
+    this._state = "en casa";
     const miFsm = new Fsm(this, states, "fsm1-cliente");
     eventEmiter.register(miFsm);
   }
@@ -95,20 +97,12 @@ class Client {
     this.homeBuild = home;
   }
 
-  descansar() {
-    this._state = "descansando";
+  atHome() {
+    this._state = "en casa";
   }
 
-  molestar() {
-    this._state = "molesto";
-  }
-
-  enojar() {
-    this._state = "enojado";
-  }
-
-  enfurecer() {
-    this._state = "furioso";
+  work() {
+    this._state = "trabajando";
   }
 
   show() {

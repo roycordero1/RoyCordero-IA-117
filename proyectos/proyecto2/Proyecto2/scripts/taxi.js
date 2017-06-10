@@ -26,12 +26,13 @@ class Stopped extends State {
 class Walking extends State {
   accepts(event, current) {
     console.log("[Walking] accepts " + JSON.stringify(event));
-    return event.msg == "Pasear";
+    return event.msg == "Pasear" && !(current instanceof Transporting);
   }
 
   onEnter(eventEmitter, fsm) {
     console.log("[Walking] onEnter");
     fsm.owner().setState("state1", "paseando");
+    this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -44,12 +45,13 @@ class Walking extends State {
 class Searching extends State {
   accepts(event, current) {
     console.log("[Searching] accepts " + JSON.stringify(event));
-    return event.msg == "Buscar";
+    return (event.msg == "Buscar" && !(current instanceof Transporting)) || event.msg == "ReanudarBuscar";
   }
 
   onEnter(eventEmitter, fsm) {
     console.log("[Searching] onEnter");
     fsm.owner().setState("state1", "buscando");
+    this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
@@ -58,11 +60,48 @@ class Searching extends State {
     fsm.owner().walk();
     var clientPosition = fsm.owner()._lookForClient();
     if (clientPosition != "NoClient") {
-      console.log("Encontró cliente!")
       var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
-      var route = fsm.owner()._chooseBetterRoute(destinationBuild);
+      var destinationPosition = destinationBuild.getSidewalks()[fsm.owner()._chooseSidewalkDestination(destinationBuild)];
+      fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
+      fsm.owner().setClientId(fsm.owner()._ownerMap.whichClient(clientPosition));
+      fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
+
+      var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
       fsm.owner().setRoute(route);
+      eventEmiter.send("Transportar", "fsm1-taxi" + fsm.owner().id());
     }
+  }
+
+}
+
+class Transporting extends State {
+  accepts(event, current) {
+    console.log("[Transporting] accepts " + JSON.stringify(event));
+    return event.msg == "Transportar";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[Transporting] onEnter");
+    fsm.owner().setState("state1", "transportando");
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[Transporting] onUpdate");
+    fsm.owner().show();
+    if (fsm.owner().getRoute().length > 0)
+      fsm.owner().transport();
+    else
+      eventEmiter.send("ReanudarBuscar", "fsm1-taxi" + fsm.owner().id());
+  }
+
+  onExit(eventEmitter, fsm) {
+    fsm.owner()._ownerMap.unwriteClientOriginDest(fsm.owner().originClientPos, fsm.owner().destClientPos);
+    fsm.owner().setClientOriginDest([], []);
+    if (fsm.owner()._ownerMap.clients[fsm.owner().clientId].state1() == "inhome")
+      eventEmiter.send("Trabajar", "fsm1-cliente" + (fsm.owner().clientId+1));
+    else
+      eventEmiter.send("Encasa", "fsm1-cliente" + (fsm.owner().clientId+1));
+    fsm.owner().setClientId(-1);
   }
 }
 
@@ -70,7 +109,7 @@ class Searching extends State {
 * Class Taxi
 * Manage taxi general functions
 */
-const states1 = [new Stopped(), new Walking(), new Searching()];
+const states1 = [new Stopped(), new Walking(), new Searching(), new Transporting()];
 const states2 = [/*new showOff()*/];
 const states3 = [/*new routeOff()*/];
 
@@ -82,6 +121,9 @@ class Taxi {
     this.pos = [i, j];
     this.prevPos = [i, j];
     this.route = [];
+    this.originClientPos = [];
+    this.destClientPos = [];
+    this.clientId = -1;
     this._lastRowMove = "down";
 
     this._state1 = "detenido";
@@ -125,6 +167,19 @@ class Taxi {
 
   setRoute(route) {
     this.route = route;
+  }
+
+  setClientOriginDest(originClientPos, destClientPos) {
+    this.originClientPos = originClientPos;
+    this.destClientPos = destClientPos; 
+  }
+
+  setClientId(clientId) {
+    this.clientId = clientId;
+  }
+
+  getRoute() {
+    return this.route;
   }
 
   walk() {
@@ -323,6 +378,15 @@ class Taxi {
 
   _calculateHeuristic(pos1, pos2) {
     return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]);
+  }
+
+  transport() {
+    this.prevPos[0] = this.pos[0];
+    this.prevPos[1] = this.pos[1];
+    this.pos[0] = this.route[0][0];
+    this.pos[1] = this.route[0][1];
+    this.route.splice(0, 1);
+    this._ownerMap.moveTaxi(this.prevPos, this.pos);
   }
 
   show() {
