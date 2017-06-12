@@ -131,7 +131,7 @@ class CityMap {
     return buildings[random];
   }
 
-  moveTaxi(oldPos, newPos) {
+  moveTaxi(oldPos, newPos, taxi) {
     var taxiInOldPos = false;
     for(var i=0; i<this.taxis.length; i++) {
       if (this.taxis[i].pos[0] == oldPos[0] && this.taxis[i].pos[1] == oldPos[1]) {
@@ -139,9 +139,39 @@ class CityMap {
         break;
       }
     }
-    if(!taxiInOldPos)
-      this._matrix[oldPos[0]][oldPos[1]] = "&nbsp";
+    if(!taxiInOldPos) {
+      if(taxi.state2() == "mostrarOff")
+        this._matrix[oldPos[0]][oldPos[1]] = "&nbsp";
+      else
+        this._matrix[oldPos[0]][oldPos[1]] = "+";
+    }      
     this._matrix[newPos[0]][newPos[1]] = "D";
+  }
+
+  cleanShowRoad() {
+    for (var i = 0; i<this._matrix.length; i++) {
+      for (var j = 0; j<this._matrix[i].length; j++) {
+        if (this._matrix[i][j] == "+") {
+          this._matrix[i][j] = "&nbsp";
+        }
+      }
+    }
+  }
+
+  writeRouteRoad(route) {
+    for (var i = 0; i<route.length; i++) {
+      this._matrix[route[i][0]][route[i][1]] = "*";
+    }
+  }
+
+  cleanRouteRoad() {
+    for (var i = 0; i<this._matrix.length; i++) {
+      for (var j = 0; j<this._matrix[i].length; j++) {
+        if (this._matrix[i][j] == "*") {
+          this._matrix[i][j] = "&nbsp";
+        }
+      }
+    }
   }
 
   whichClient(clientPosition) {
@@ -152,9 +182,17 @@ class CityMap {
     return -1;
   }
 
+  whichBuild(buildName) {
+    for(var i = 0; i<this.buildings.length; i++) {
+      if (this.buildings[i].getBuildingName() == buildName)
+        return this.buildings[i];
+    }
+    return null;
+  }
+
   getClientDestinationBuild(clientId) {
     var client = this.clients[clientId];
-    if (client.state1() == "inhome")
+    if (client.state1() == "en casa")
       return client.getWorkBuild();
     else
       return client.getHomeBuild();
@@ -189,11 +227,6 @@ class CityMap {
       var c = this._matrix[this.clients[j].work[0]][this.clients[j].work[1]];
       console.log(this.clients[j].id() + " " + a + " " + b + " " + c);
     }
-  }
-  //**Revisar si se usa**
-  writeToMap(oldPos, newObj1, newPos, newObj2) {
-    this._matrix[oldPos[0]][oldPos[1]] = newObj1;
-    this._matrix[newPos[0]][newPos[1]] = newObj2;
   }
 
   printMap() {

@@ -44,7 +44,7 @@ class Fsm {
           this._current.onExit(eventEmitter, this);
         }
         this._current = state;
-        this._current.onEnter(eventEmitter, this);
+        this._current.onEnter(eventEmitter, this, event);
       } else if (this._current) {
         this._current.onMessage(event);
       }

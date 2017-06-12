@@ -44,6 +44,27 @@ class Application {
           document.getElementById("message").innerHTML = "Buscar a todos";
         this._buscarInstruction(instruction);
         break;
+      case "Parquear":
+        if (instruction[2])
+          document.getElementById("message").innerHTML = "Parquear a " + instruction[2];
+        else
+          document.getElementById("message").innerHTML = "Parquear a todos";
+        this._parquearInstruction(instruction);
+        break;
+      case "Mostrar":
+        if (instruction[2])
+          document.getElementById("message").innerHTML = "Mostrar a " + instruction[2];
+        else
+          document.getElementById("message").innerHTML = "Mostrar a todos";
+        this._mostrarInstruction(instruction);
+        break;
+      case "Ruta":
+        if (instruction[2])
+          document.getElementById("message").innerHTML = "Ruta a " + instruction[2];
+        else
+          document.getElementById("message").innerHTML = "Ruta a todos";
+        this._rutaInstruction(instruction);
+        break;
   		default:
   			document.getElementById("message").innerHTML = "Comando no válido!"
   	}
@@ -56,13 +77,19 @@ class Application {
       return "Pasear";
     else if (instr[0] == "buscar")
       return "Buscar"
+    else if (instr[0] == "parquear" && (instr.length==2 || instr.length==3))
+      return "Parquear"
+    else if (instr[0] == "mostrar" && (instr.length==2 || instr.length==3) && (instr[1]=="on" || instr[1]=="off"))
+      return "Mostrar"
+    else if (instr[0] == "ruta" && (instr.length==2 || instr.length==3) && (instr[1]=="on" || instr[1]=="off"))
+      return "Ruta"
   	return "Invalid";
   }
 
   _animarInstruction(time) {
   	if (time == 0) {
   		this._killInterval(this._updateIntervalId);
-      eventEmiter.send("Detener");
+      eventEmiter.send({msg: "Detener"});
     }
   	else
   		this._createUpdateInterval(time);
@@ -73,7 +100,7 @@ class Application {
   		this._killInterval(this._updateIntervalId);
   	this._updateIntervalId = setInterval(() => {
 		  eventEmiter.update();
-		  eventEmiter.send("update");
+		  eventEmiter.send({msg: "update"});
 		  app.printMap();
 		}, time);
   }
@@ -84,15 +111,44 @@ class Application {
 
   _pasearInstruction(instruction) {
     if (!instruction[1])
-      eventEmiter.send("Pasear");
+      eventEmiter.send({msg: "Pasear"});
     else
-      eventEmiter.send("Pasear", instruction[1]);
+      eventEmiter.send({msg: "Pasear", id: instruction[1]});
   }
 
   _buscarInstruction(instruction) {
     if (!instruction[1])
-      eventEmiter.send("Buscar");
+      eventEmiter.send({msg: "Buscar"});
     else
-      eventEmiter.send("Buscar", instruction[1]);
+      eventEmiter.send({msg: "Buscar", id: instruction[1]});
+  }
+
+  _parquearInstruction(instruction) {
+    if (!instruction[2])
+      eventEmiter.send({msg: "Parquear", param1: instruction[1]});
+    else
+      eventEmiter.send({msg: "Parquear", id: instruction[2], param1: instruction[1]});
+  }
+
+  _mostrarInstruction(instruction) {
+    if (!instruction[2] && instruction[1] == "on")
+      eventEmiter.send({msg: "MostrarOn"});
+    else if (!instruction[2] && instruction[1] == "off")
+      eventEmiter.send({msg: "MostrarOff"});
+    else if (instruction[2] && instruction[1] == "on")
+      eventEmiter.send({msg: "MostrarOn", id: instruction[2]});
+    else if (instruction[2] && instruction[1] == "off")
+      eventEmiter.send({msg: "MostrarOff", id: instruction[2]});
+  }
+
+  _rutaInstruction(instruction) {
+    if (!instruction[2] && instruction[1] == "on")
+      eventEmiter.send({msg: "RutaOn"});
+    else if (!instruction[2] && instruction[1] == "off")
+      eventEmiter.send({msg: "RutaOff"});
+    else if (instruction[2] && instruction[1] == "on")
+      eventEmiter.send({msg: "RutaOn", id: instruction[2]});
+    else if (instruction[2] && instruction[1] == "off")
+      eventEmiter.send({msg: "RutaOff", id: instruction[2]});
   }
 }

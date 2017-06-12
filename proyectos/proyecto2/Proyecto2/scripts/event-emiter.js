@@ -53,10 +53,12 @@ class EventEmitter {
    * Enviar mensaje, 
    * Si el id es no se especifica se envia a todos los objetos 
    */
-  send(msg, id) {
+  send(params) {
     this._send({
-      id: id,
-      msg: msg
+      id: params.id,
+      msg: params.msg,
+      param1: params.param1,
+      param2: params.param2
     });
   }
   /**

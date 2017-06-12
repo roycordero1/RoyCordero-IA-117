@@ -4,7 +4,7 @@ Roy Cordero Durán
 -------------------------------------------*/
 
 /*
-* States classes for the taxi
+* States1 classes for the taxi
 */
 class Stopped extends State {
   accepts(event, current) {
@@ -65,11 +65,39 @@ class Searching extends State {
       fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
       fsm.owner().setClientId(fsm.owner()._ownerMap.whichClient(clientPosition));
       fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
+      console.log("destinationBuild " + destinationBuild.getBuildingName());
 
       var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
       fsm.owner().setRoute(route);
-      eventEmiter.send("Transportar", "fsm1-taxi" + fsm.owner().id());
+      eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
     }
+  }
+
+}
+
+class Parking extends State {
+  accepts(event, current) {
+    console.log("[Parking] accepts " + JSON.stringify(event));
+    return event.msg == "Parquear" && !(current instanceof Transporting);
+  }
+
+  onEnter(eventEmitter, fsm, event) {
+    console.log("[Parking] onEnter");
+    fsm.owner().setState("state1", "parqueando");
+    var destinationBuild = fsm.owner()._ownerMap.whichBuild(event.param1);
+    if (destinationBuild) {
+      var route = fsm.owner()._chooseBetterRoute(destinationBuild);
+      fsm.owner().setRoute(route);
+    }      
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[Parking] onUpdate");
+    fsm.owner().show();
+    if (fsm.owner().getRoute().length > 0)
+      fsm.owner().transport();
+    else
+      eventEmiter.send({msg: "Detener", id: "fsm1-taxi" + fsm.owner().id()});
   }
 
 }
@@ -91,17 +119,94 @@ class Transporting extends State {
     if (fsm.owner().getRoute().length > 0)
       fsm.owner().transport();
     else
-      eventEmiter.send("ReanudarBuscar", "fsm1-taxi" + fsm.owner().id());
+      eventEmiter.send({msg: "ReanudarBuscar", id: "fsm1-taxi" + fsm.owner().id()});
   }
 
   onExit(eventEmitter, fsm) {
     fsm.owner()._ownerMap.unwriteClientOriginDest(fsm.owner().originClientPos, fsm.owner().destClientPos);
     fsm.owner().setClientOriginDest([], []);
     if (fsm.owner()._ownerMap.clients[fsm.owner().clientId].state1() == "inhome")
-      eventEmiter.send("Trabajar", "fsm1-cliente" + (fsm.owner().clientId+1));
+      eventEmiter.send({msg: "Trabajar", id: "fsm1-cliente" + (fsm.owner().clientId+1)});
     else
-      eventEmiter.send("Encasa", "fsm1-cliente" + (fsm.owner().clientId+1));
+      eventEmiter.send({msg: "Encasa", id: "fsm1-cliente" + (fsm.owner().clientId+1)});
     fsm.owner().setClientId(-1);
+  }
+}
+
+/*
+* States2 classes for the taxi
+*/
+class showOff extends State {
+  accepts(event, current) {
+    console.log("[showOff] accepts " + JSON.stringify(event));
+    return event.msg == "MostrarOff";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[showOff] onEnter");
+    fsm.owner().setState("state2", "mostrarOff");
+    fsm.owner()._ownerMap.cleanShowRoad();
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[showOff] onUpdate");
+    //fsm.owner().show();
+  }
+}
+
+class showOn extends State {
+  accepts(event, current) {
+    console.log("[showOn] accepts " + JSON.stringify(event));
+    return event.msg == "MostrarOn";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[showOn] onEnter");
+    fsm.owner().setState("state2", "mostrarOn");
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[showOn] onUpdate");
+    //fsm.owner().show();
+  }
+}
+
+/*
+* States3 classes for the taxi
+*/
+class routeOff extends State {
+  accepts(event, current) {
+    console.log("[routeOff] accepts " + JSON.stringify(event));
+    return event.msg == "RutaOff";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[routeOff] onEnter");
+    fsm.owner().setState("state3", "routeOff");
+    fsm.owner()._ownerMap.cleanRouteRoad();
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[routeOff] onUpdate");
+    //fsm.owner().show();
+  }
+}
+
+class routeOn extends State {
+  accepts(event, current) {
+    console.log("[routeOn] accepts " + JSON.stringify(event));
+    return event.msg == "RutaOn";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[routeOn] onEnter");
+    fsm.owner().setState("state3", "routeOn");
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[routeOn] onUpdate");
+    fsm.owner()._ownerMap.writeRouteRoad(fsm.owner().getRoute());
+    //fsm.owner().show();
   }
 }
 
@@ -109,9 +214,9 @@ class Transporting extends State {
 * Class Taxi
 * Manage taxi general functions
 */
-const states1 = [new Stopped(), new Walking(), new Searching(), new Transporting()];
-const states2 = [/*new showOff()*/];
-const states3 = [/*new routeOff()*/];
+const states1 = [new Stopped(), new Walking(), new Searching(), new Parking(), new Transporting()];
+const states2 = [new showOff(), new showOn()];
+const states3 = [new routeOff(), new routeOn()];
 
 class Taxi {
 
@@ -205,13 +310,14 @@ class Taxi {
     var pos3toCalc = map[taxiRow+movesList[2][0]][taxiCol+movesList[2][1]];
     var pos4toCalc = map[taxiRow+movesList[3][0]][taxiCol+movesList[3][1]];
 
-    if (!isPrevPos1 && (pos1toCalc == "&nbsp" || pos1toCalc == "D"))
+    var elementsToIgnore = ["&nbsp", "D", "+", "*"];
+    if (!isPrevPos1 && elementsToIgnore.indexOf(pos1toCalc) != -1)
       return 1;
-    else if (!isPrevPos2 && (pos2toCalc == "&nbsp" || pos2toCalc == "D"))
+    else if (!isPrevPos2 && elementsToIgnore.indexOf(pos2toCalc) != -1)
       return 2;
-    else if (!isPrevPos3 && (pos3toCalc == "&nbsp" || pos3toCalc == "D"))
+    else if (!isPrevPos3 && elementsToIgnore.indexOf(pos3toCalc) != -1)
       return 3;
-    else if (!isPrevPos4 && (pos4toCalc == "&nbsp" || pos4toCalc == "D"))
+    else if (!isPrevPos4 && elementsToIgnore.indexOf(pos4toCalc) != -1)
       return 4;
     else
       return 0;
@@ -223,26 +329,26 @@ class Taxi {
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]++;
-        this._ownerMap.moveTaxi(this.prevPos, this.pos);
+        this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         break;
       case 2:
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]--;
-        this._ownerMap.moveTaxi(this.prevPos, this.pos);
+        this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         break;
       case 3:
         if (this._lastRowMove == "down") {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
-          this._ownerMap.moveTaxi(this.prevPos, this.pos);
+          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         else {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
-          this._ownerMap.moveTaxi(this.prevPos, this.pos);
+          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         break;
       case 4:
@@ -251,14 +357,14 @@ class Taxi {
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
           this._lastRowMove = "up"
-          this._ownerMap.moveTaxi(this.prevPos, this.pos);
+          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         else {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
           this._lastRowMove = "down"
-          this._ownerMap.moveTaxi(this.prevPos, this.pos);
+          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
     }
   }
@@ -345,28 +451,29 @@ class Taxi {
     var isPrevPosD = taxiRow+1 == taxiPrevPos[0] && taxiCol == taxiPrevPos[1];
     var isPrevPosU = taxiRow-1 == taxiPrevPos[0] && taxiCol == taxiPrevPos[1];
 
-    if (!isPrevPosR && (map[taxiRow][taxiCol+1] == "&nbsp" || map[taxiRow][taxiCol+1] == "D")) {
+    var elementsToIgnore = ["&nbsp", "D", "+", "*"];
+    if (!isPrevPosR && elementsToIgnore.indexOf(map[taxiRow][taxiCol+1]) != -1) {
       var score = this._calculateHeuristic([taxiRow, taxiCol+1], [destPos[0], destPos[1]]);
       if (score < bestScore) {
         bestScore = score;
         nextMove = [taxiRow, taxiCol+1];
       }
     }
-    if (!isPrevPosL && (map[taxiRow][taxiCol-1] == "&nbsp" || map[taxiRow][taxiCol-1] == "D")) {
+    if (!isPrevPosL && elementsToIgnore.indexOf(map[taxiRow][taxiCol-1]) != -1) {
       var score = this._calculateHeuristic([taxiRow, taxiCol-1], [destPos[0], destPos[1]]);
       if (score < bestScore) {
         bestScore = score;
         nextMove = [taxiRow, taxiCol-1];
       }
     }
-    if (!isPrevPosD && (map[taxiRow+1][taxiCol] == "&nbsp" || map[taxiRow+1][taxiCol] == "D")) {
+    if (!isPrevPosD && elementsToIgnore.indexOf(map[taxiRow+1][taxiCol]) != -1) {
       var score = this._calculateHeuristic([taxiRow+1, taxiCol], [destPos[0], destPos[1]]);
       if (score < bestScore) {
         bestScore = score;
         nextMove = [taxiRow+1, taxiCol];
       }
     }
-    if (!isPrevPosU && (map[taxiRow-1][taxiCol] == "&nbsp" || map[taxiRow-1][taxiCol] == "D")) {
+    if (!isPrevPosU && elementsToIgnore.indexOf(map[taxiRow-1][taxiCol]) != -1) {
       var score = this._calculateHeuristic([taxiRow-1, taxiCol], [destPos[0], destPos[1]]);
       if (score < bestScore) {
         bestScore = score;
@@ -386,7 +493,7 @@ class Taxi {
     this.pos[0] = this.route[0][0];
     this.pos[1] = this.route[0][1];
     this.route.splice(0, 1);
-    this._ownerMap.moveTaxi(this.prevPos, this.pos);
+    this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
   }
 
   show() {
