@@ -22,10 +22,10 @@ class Night extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Night] onUpdate");
     fsm.owner().addTime();
-    fsm.owner()._doClientsGetOuts("Work");
+    fsm.owner()._doClientsGetOut("Work");
     if (fsm.owner().getTime() >= fsm.owner().getTimePerDay())
       fsm.owner().setTime(fsm.owner().getTime()-fsm.owner().getTimePerDay());
-    if (fsm.owner().getTime() > fsm.owner().getTimePerDay()*0.25 && fsm.owner().getTime() < fsm.owner().getTimePerDay()*0.75)
+    if (fsm.owner().getTime() > fsm.owner().getTimePerDay()*0.25 && fsm.owner().getTime() < fsm.owner().getTimePerDay()*0.65)
       eventEmiter.send({msg: "Dia", id: "mapa1"});
   }
 }
@@ -46,8 +46,8 @@ class Day extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Day] onUpdate");
     fsm.owner().addTime();
-    fsm.owner()._doClientsGetOuts("Home");
-    if (fsm.owner().getTime() > fsm.owner().getTimePerDay()*0.75)
+    fsm.owner()._doClientsGetOut("Home");
+    if (fsm.owner().getTime() > fsm.owner().getTimePerDay()*0.65)
       eventEmiter.send({msg: "Noche", id: "mapa1"});
   }
 }
@@ -67,7 +67,7 @@ class CityMap {
     this.clients = []
     this.buildings = []
 
-    this.timePerDay = 20000;
+    this.timePerDay = 60000;
     this.timeRangetoGetOut = 0.10;
     this.timeUpdate = 0;
     this.time = 0;    
@@ -107,6 +107,10 @@ class CityMap {
     return this.time;
   }
 
+  getTimeRangetoGetOut(percentage) {
+    return this.timeRangetoGetOut;
+  }
+
   getTimeUpdate() {
     return this.timeUpdate;
   }
@@ -117,6 +121,10 @@ class CityMap {
 
   setTime(time) {
     this.time = time;
+  }
+
+  setTimeRangetoGetOut(percentage) {
+    this.timeRangetoGetOut = percentage;
   }
 
   setTimeUpdate(time) {
@@ -133,6 +141,7 @@ class CityMap {
 
   dia() {
     this._state = "dia";
+    this._checkForgottenClients();
     var dayStartTime = this.timePerDay*0.25;
     var range = this.timePerDay*this.timeRangetoGetOut;
     for(var i = 0; i<this.clients.length; i++) {
@@ -146,6 +155,16 @@ class CityMap {
 
   noche() {
     this._state = "noche";
+    this._checkForgottenClients();
+    var dayEndTime = this.timePerDay*0.65;
+    var range = this.timePerDay*this.timeRangetoGetOut;
+    for(var i = 0; i<this.clients.length; i++) {
+      var client = this.clients[i];
+      var random = Math.floor((Math.random() * parseInt(range)));
+      if (client.state() == "en casa") {
+        client.setGetOutTime(dayEndTime + random);
+      }
+    }
   }
 
   /*---------------------------------------------------------
@@ -319,6 +338,10 @@ class CityMap {
       this._matrix[destPos[0]][destPos[1]] = "-";
   }
 
+  writeClient(pos) {
+    this._matrix[pos[0]][pos[1]] = "0";
+  }
+
   unwriteClient(pos) {
     if(this._matrix[pos[0]-1][pos[1]] == "-")
       this._matrix[pos[0]][pos[1]] = "|";
@@ -348,9 +371,9 @@ class CityMap {
 
   getClientDestinationBuild(clientId) {
     var client = this.clients[clientId];
-    if (client.state() == "en casa")
+    if (client.state() == "esperando taxi para ir al trabajo")
       return client.getWorkBuild();
-    else
+    else if (client.state() == "esperando taxi para ir a casa")
       return client.getHomeBuild();
   }  
 
@@ -398,14 +421,28 @@ class CityMap {
     }
   }
 
-  _doClientsGetOuts(getOutType) {
+  _doClientsGetOut(getOutType) {
+    var dayStartTime = this.timePerDay*0.25;
+    var dayEndTime = this.timePerDay*0.65;
     for(var i = 0; i<this.clients.length; i++) {
       var client = this.clients[i];
-      if (client.getGetOutTime() >= this.time && getOutType == "Home") {
+      if (client.getGetOutTime() >= dayStartTime && client.getGetOutTime() <= this.time && getOutType == "Home") {
         eventEmiter.send({msg: "Wait taxi to work", id: "cliente" + client.id()});
       }
-      else if (client.getGetOutTime() >= this.time && getOutType == "Work") {
+      else if (client.getGetOutTime() >= dayEndTime && client.getGetOutTime() <= this.time && getOutType == "Work") {
         eventEmiter.send({msg: "Wait taxi to home", id: "cliente" + client.id()});
+      }
+    }
+  }
+
+  _checkForgottenClients() {
+    for(var i = 0; i<this.clients.length; i++) {
+      var client = this.clients[i];
+      if (client.state() == "esperando taxi para ir al trabajo" && this.state() == "noche") {
+        eventEmiter.send({msg: "Encasa", id: "cliente" + client.id()});
+      }
+      else if (client.state() == "esperando taxi para ir a casa" && this.state() == "dia") {
+        eventEmiter.send({msg: "Trabajar", id: "cliente" + client.id()});
       }
     }
   }
@@ -417,7 +454,8 @@ class CityMap {
   test1() {
     for(var i = 0; i<this.clients.length; i++) {
       var client = this.clients[i];
-      console.log("Cliente "+client.id()+": Tiempo - "+client.getGetOutTime())
+      console.log("Cliente "+client.id()+": Tiempo - "+client.getGetOutTime());
+      console.log("Tiempo "+this.getTime());
     }    
   }
 

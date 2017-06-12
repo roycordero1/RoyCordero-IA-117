@@ -73,6 +73,14 @@ class Application {
         document.getElementById("message").innerHTML = "Cliente de " + instruction[1] + " a " + instruction[2];
         this._unClienteInstruction(instruction);
         break;
+      case "Dia":
+        document.getElementById("message").innerHTML = "Dia de " + instruction[1] + " segundos";
+        this._diaInstruction(instruction);
+        break;
+      case "Rango":
+        document.getElementById("message").innerHTML = "Rango de " + instruction[1] + "%";
+        this._rangoInstruction(instruction);
+        break;
   		default:
   			document.getElementById("message").innerHTML = "Comando no válido!"
   	}
@@ -95,6 +103,10 @@ class Application {
       return "Clientes"
     else if (instr[0] == "cliente" && instr.length == 3)
       return "Cliente"
+    else if (instr[0] == "dia" && instr.length == 2 && typeof parseInt(instr[1]) == "number")
+      return "Dia"
+    else if (instr[0] == "rango" && instr.length == 2 && typeof parseInt(instr[1]) == "number")
+      return "Rango"
   	return "Invalid";
   }
 
@@ -177,5 +189,13 @@ class Application {
 
   _unClienteInstruction(instruction) {
     this.map.addOneClient(instruction[1], instruction[2]);
+  }
+
+  _diaInstruction(instruction) {
+    this.map.setTimePerDay(parseInt(instruction[1])*1000);
+  }
+
+  _rangoInstruction(instruction) {
+    this.map.setTimeRangetoGetOut(parseInt(instruction[1])/100);
   }
 }

@@ -9,7 +9,7 @@ Roy Cordero Durán
 class InHome extends State {
   accepts(event, current) {
     console.log("[InHome] accepts " + JSON.stringify(event));
-    return event.msg == "Encasa";
+    return event.msg == "Encasa" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
@@ -26,7 +26,7 @@ class InHome extends State {
 class Working extends State {
   accepts(event, current) {
     console.log("[Working] accepts " + JSON.stringify(event));
-    return event.msg == "Trabajar";
+    return event.msg == "Trabajar" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
@@ -43,7 +43,7 @@ class Working extends State {
 class WaitingTaxiToHome extends State {
   accepts(event, current) {
     console.log("[WaitingTaxiToHome] accepts " + JSON.stringify(event));
-    return event.msg == "Wait taxi to home";
+    return event.msg == "Wait taxi to home" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
@@ -61,7 +61,7 @@ class WaitingTaxiToHome extends State {
 class WaitingTaxiToWork extends State {
   accepts(event, current) {
     console.log("[WaitingTaxiToWork] accepts " + JSON.stringify(event));
-    return event.msg == "Wait taxi to work";
+    return event.msg == "Wait taxi to work" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
@@ -72,6 +72,40 @@ class WaitingTaxiToWork extends State {
 
   onUpdate(eventEmitter, fsm) {
     console.log("[WaitingTaxiToWork] onUpdate");
+    fsm.owner().show();
+  }
+}
+
+class MovingToHome extends State {
+  accepts(event, current) {
+    console.log("[MovingToHome] accepts " + JSON.stringify(event));
+    return event.msg == "Moving to home";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[MovingToHome] onEnter");
+    fsm.owner().moveToHome();
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[MovingToHome] onUpdate");
+    fsm.owner().show();
+  }
+}
+
+class MovingToWork extends State {
+  accepts(event, current) {
+    console.log("[MovingToWork] accepts " + JSON.stringify(event));
+    return event.msg == "Moving to work";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[MovingToWork] onEnter");
+    fsm.owner().moveToWork();
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[MovingToWork] onUpdate");
     fsm.owner().show();
   }
 }
@@ -128,18 +162,44 @@ class Client {
 
   atHome() {
     this._state = "en casa";
+    this._ownerMap.unwriteClient(this.pos);
   }
 
   work() {
     this._state = "trabajando";
-  }
-
-  waitTaxiToWork() {
-    this._state = "esperando taxi para ir al trabajo"; 
+    this._ownerMap.unwriteClient(this.pos);
   }
 
   waitTaxiToHome() {
-    this._state = "esperando taxi para ir a casa"; 
+    this._state = "esperando taxi para ir a casa";
+    var random = Math.floor(Math.random() * 7);
+    if (random == 3)
+      random++;
+    else if (random == 6)
+      random--;
+    var pos = this.workBuild.getSidewalks()[random];
+    this.pos = pos;
+    this._ownerMap.writeClient(pos);
+  }
+
+  waitTaxiToWork() {
+    this._state = "esperando taxi para ir al trabajo";
+    var random = Math.floor(Math.random() * 7);
+    if (random == 2)
+      random++;
+    else if (random == 6)
+      random--;
+    var pos = this.homeBuild.getSidewalks()[random];
+    this.pos = pos;
+    this._ownerMap.writeClient(pos);
+  }
+
+  moveToHome() {
+    this._state = "moviendose a casa";
+  }
+
+  moveToWork() {
+    this._state = "moviendose al trabajo";
   }
 
   show() {

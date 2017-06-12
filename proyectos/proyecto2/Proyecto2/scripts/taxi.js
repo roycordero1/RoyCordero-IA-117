@@ -24,15 +24,17 @@ class Stopped extends State {
 
   onExit(eventEmitter, fsm) {
     console.log("[Stopped] onExit");
-    switch(fsm._previous.getClass()) {
-      case Walking:
-        eventEmiter.send({msg: "Pasear", id: "fsm1-taxi" + fsm.owner().id()});
-      case Searching:
-        eventEmiter.send({msg: "Buscar", id: "fsm1-taxi" + fsm.owner().id()});
-      case Parking:
-        eventEmiter.send({msg: "Parquear", id: "fsm1-taxi" + fsm.owner().id()});
-      case Transporting:
-        eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
+    if(fsm._previous) {
+      switch(fsm._previous.getClass()) {
+        case Walking:
+          eventEmiter.send({msg: "Pasear", id: "fsm1-taxi" + fsm.owner().id()});
+        case Searching:
+          eventEmiter.send({msg: "Buscar", id: "fsm1-taxi" + fsm.owner().id()});
+        case Parking:
+          eventEmiter.send({msg: "Parquear", id: "fsm1-taxi" + fsm.owner().id()});
+        case Transporting:
+          eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
+      }
     }
   }
 }
@@ -77,12 +79,19 @@ class Searching extends State {
       var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
       var destinationPosition = destinationBuild.getSidewalks()[fsm.owner()._chooseSidewalkDestination(destinationBuild)];
       fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
-      fsm.owner().setClientId(fsm.owner()._ownerMap.whichClient(clientPosition));
+      var clientId = fsm.owner()._ownerMap.whichClient(clientPosition);
+      fsm.owner().setClientId(clientId);
       fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
 
       var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
       fsm.owner().setRoute(route);
+
       eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
+      console.log("destinationBuild " + destinationBuild.getBuildingName());
+      if (destinationBuild.getBuildingType() == "Home")
+        eventEmiter.send({msg: "Moving to home", id: "cliente" + (clientId+1)});
+      else if (destinationBuild.getBuildingType() == "Work")
+        eventEmiter.send({msg: "Moving to work", id: "cliente" + (clientId+1)});
     }
   }
 
