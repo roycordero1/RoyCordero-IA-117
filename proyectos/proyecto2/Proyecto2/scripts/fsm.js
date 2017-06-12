@@ -3,16 +3,17 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/**
-* Class Fsm
-* Manage the finite state machine functions
-*/
+/*-------------------------------------------
+// Class Fsm
+// Manage the finite state machine functions
+-------------------------------------------*/
 class Fsm {
 
   constructor(owner, states, fsmId) {
     this._owner = owner;
     this._states = states;
     this._current = states[0];
+    this._previous = null;
     this._id = fsmId + this._owner.id();
   }
   
@@ -36,16 +37,19 @@ class Fsm {
       if (this._current) {
         this._current.onUpdate(eventEmitter, this);
       }
-    } else {
+    } 
+    else {
       const state = this._states.find((s) => s.accepts(event, this._current));
       const accepted = state && state !== this._current;
       if (accepted) {
         if (this._current) {
           this._current.onExit(eventEmitter, this);
         }
+        this._previous = this._current;
         this._current = state;
         this._current.onEnter(eventEmitter, this, event);
-      } else if (this._current) {
+      } 
+      else if (this._current) {
         this._current.onMessage(event);
       }
     }

@@ -3,10 +3,10 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/*
-* Class Building
-* Manage building general functions
-*/
+/*-------------------------------------------
+// Class Building
+// Manage building general functions
+-------------------------------------------*/
 class Building {
 
   constructor(id, i, j, name, ownerMap) {
@@ -34,14 +34,26 @@ class Building {
 
   getBuildingName() {
     return this.buildName;
+  }  
+
+  getSidewalks() {
+    return this.sidewalks;
+  }
+
+  getPeopleQuant() {
+    return this.peopleQuant;
+  }
+
+  addPerson() {
+    this.peopleQuant = this.peopleQuant+1;
+  }
+
+  substractPerson() {
+    this.peopleQuant = this.peopleQuant-1;
   }
 
   setBuildingType(buildingType) {
     this.buildingType = buildingType;
-  }
-
-  getSidewalks() {
-    return this.sidewalks;
   }
 
   _setSidewalks() {

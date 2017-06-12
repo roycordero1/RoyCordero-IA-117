@@ -3,13 +3,13 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/*
-* Class Application
-* Manage app general functions
-*/
+/*-------------------------------------------
+// Class Application
+// Manage app general functions
+-------------------------------------------*/
 class Application {
 	constructor() {
-		this.map = new CityMap();
+		this.map = new CityMap(1);
 		this._updateIntervalId = 0;
 	}
 
@@ -67,7 +67,7 @@ class Application {
         break;
       case "Clientes":
         document.getElementById("message").innerHTML = "Clientes " + instruction[1];
-        this._clientesInstruction(instruction);
+        this._clientesInstruction(instruction[1]);
         break;
       case "Cliente":
         document.getElementById("message").innerHTML = "Cliente de " + instruction[1] + " a " + instruction[2];
@@ -99,6 +99,7 @@ class Application {
   }
 
   _animarInstruction(time) {
+    this.map.setTimeUpdate(time);
   	if (time == 0) {
   		this._killInterval(this._updateIntervalId);
       eventEmiter.send({msg: "Detener"});
@@ -167,8 +168,11 @@ class Application {
       eventEmiter.send({msg: "RutaOff", id: instruction[2]});
   }
 
-  _clientesInstruction(instruction) {
-    this.map.addClients(instruction[1]);
+  _clientesInstruction(quantity) {
+    if (quantity == 0)
+      this.map.deleteClients();
+    else
+      this.map.addClients(quantity);
   }
 
   _unClienteInstruction(instruction) {

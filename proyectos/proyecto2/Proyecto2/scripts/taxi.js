@@ -3,9 +3,9 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/*
-* States1 classes for the taxi
-*/
+/*-------------------------------------------
+// State classes type 1 for the taxi
+-------------------------------------------*/
 class Stopped extends State {
   accepts(event, current) {
     console.log("[Stopped] accepts " + JSON.stringify(event));
@@ -20,6 +20,20 @@ class Stopped extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Stopped] onUpdate");
     fsm.owner().show();
+  }
+
+  onExit(eventEmitter, fsm) {
+    console.log("[Stopped] onExit");
+    switch(fsm._previous.getClass()) {
+      case Walking:
+        eventEmiter.send({msg: "Pasear", id: "fsm1-taxi" + fsm.owner().id()});
+      case Searching:
+        eventEmiter.send({msg: "Buscar", id: "fsm1-taxi" + fsm.owner().id()});
+      case Parking:
+        eventEmiter.send({msg: "Parquear", id: "fsm1-taxi" + fsm.owner().id()});
+      case Transporting:
+        eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
+    }
   }
 }
 
@@ -65,7 +79,6 @@ class Searching extends State {
       fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
       fsm.owner().setClientId(fsm.owner()._ownerMap.whichClient(clientPosition));
       fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
-      console.log("destinationBuild " + destinationBuild.getBuildingName());
 
       var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
       fsm.owner().setRoute(route);
@@ -123,19 +136,27 @@ class Transporting extends State {
   }
 
   onExit(eventEmitter, fsm) {
+    console.log("[Transporting] onExit");
     fsm.owner()._ownerMap.unwriteClientOriginDest(fsm.owner().originClientPos, fsm.owner().destClientPos);
     fsm.owner().setClientOriginDest([], []);
-    if (fsm.owner()._ownerMap.clients[fsm.owner().clientId].state1() == "inhome")
-      eventEmiter.send({msg: "Trabajar", id: "fsm1-cliente" + (fsm.owner().clientId+1)});
-    else
-      eventEmiter.send({msg: "Encasa", id: "fsm1-cliente" + (fsm.owner().clientId+1)});
+    var client = fsm.owner()._ownerMap.clients[fsm.owner().clientId];
+    if (client.state() == "en casa") {
+      client.getHomeBuild().substractPerson();
+      client.getWorkBuild().addPerson();
+      eventEmiter.send({msg: "Trabajar", id: "cliente" + (fsm.owner().clientId+1)});
+    }
+    else {
+      client.getWorkBuild().substractPerson();
+      client.getHomeBuild().addPerson();
+      eventEmiter.send({msg: "Encasa", id: "cliente" + (fsm.owner().clientId+1)});
+    }
     fsm.owner().setClientId(-1);
   }
 }
 
-/*
-* States2 classes for the taxi
-*/
+/*-------------------------------------------
+// State classes type 2 for the taxi
+-------------------------------------------*/
 class showOff extends State {
   accepts(event, current) {
     console.log("[showOff] accepts " + JSON.stringify(event));
@@ -171,9 +192,9 @@ class showOn extends State {
   }
 }
 
-/*
-* States3 classes for the taxi
-*/
+/*-------------------------------------------
+// State classes type 3 for the taxi
+-------------------------------------------*/
 class routeOff extends State {
   accepts(event, current) {
     console.log("[routeOff] accepts " + JSON.stringify(event));
@@ -210,13 +231,13 @@ class routeOn extends State {
   }
 }
 
-/*
-* Class Taxi
-* Manage taxi general functions
-*/
-const states1 = [new Stopped(), new Walking(), new Searching(), new Parking(), new Transporting()];
-const states2 = [new showOff(), new showOn()];
-const states3 = [new routeOff(), new routeOn()];
+/*-------------------------------------------
+// Class Taxi
+// Manage taxi general functions
+-------------------------------------------*/
+const states1Taxi = [new Stopped(), new Walking(), new Searching(), new Parking(), new Transporting()];
+const states2Taxi = [new showOff(), new showOn()];
+const states3Taxi = [new routeOff(), new routeOn()];
 
 class Taxi {
 
@@ -234,9 +255,9 @@ class Taxi {
     this._state1 = "detenido";
     this._state2 = "mostrarOff";
     this._state3 = "rutaOff";
-    const fsm1 = new Fsm(this, states1, "fsm1-taxi");
-    const fsm2 = new Fsm(this, states2, "fsm2-taxi");
-    const fsm3 = new Fsm(this, states3, "fsm3-taxi");
+    const fsm1 = new Fsm(this, states1Taxi, "fsm1-taxi");
+    const fsm2 = new Fsm(this, states2Taxi, "fsm2-taxi");
+    const fsm3 = new Fsm(this, states3Taxi, "fsm3-taxi");
     eventEmiter.register(fsm1);
     eventEmiter.register(fsm2);
     eventEmiter.register(fsm3);

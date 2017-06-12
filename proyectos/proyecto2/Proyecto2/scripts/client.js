@@ -3,9 +3,9 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/*
-* States classes for the taxi
-*/
+/*-------------------------------------------
+// States classes for the taxi
+-------------------------------------------*/
 class InHome extends State {
   accepts(event, current) {
     console.log("[InHome] accepts " + JSON.stringify(event));
@@ -40,27 +40,47 @@ class Working extends State {
   }
 }
 
-class Waiting extends State {
+class WaitingTaxiToHome extends State {
   accepts(event, current) {
-    console.log("[Waiting] accepts " + JSON.stringify(event));
-    return false;
+    console.log("[WaitingTaxiToHome] accepts " + JSON.stringify(event));
+    return event.msg == "Wait taxi to home";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Waiting] onEnter");
+    console.log("[WaitingTaxiToHome] onEnter");
+    fsm.owner().waitTaxiToHome();
+    fsm.owner().setGetOutTime(0);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Waiting] onUpdate");
+    console.log("[WaitingTaxiToHome] onUpdate");
     fsm.owner().show();
   }
 }
 
-/*
-* Class Client
-* Manage client general functions
-*/
-const states = [new InHome(), new Working(), new Waiting()];
+class WaitingTaxiToWork extends State {
+  accepts(event, current) {
+    console.log("[WaitingTaxiToWork] accepts " + JSON.stringify(event));
+    return event.msg == "Wait taxi to work";
+  }
+
+  onEnter(eventEmitter, fsm) {
+    console.log("[WaitingTaxiToWork] onEnter");
+    fsm.owner().waitTaxiToWork();
+    fsm.owner().setGetOutTime(0);
+  }
+
+  onUpdate(eventEmitter, fsm) {
+    console.log("[WaitingTaxiToWork] onUpdate");
+    fsm.owner().show();
+  }
+}
+
+/*-------------------------------------------
+// Class Client
+// Manage client general functions
+-------------------------------------------*/
+const statesClient = [new InHome(), new Working(), new WaitingTaxiToHome(), new WaitingTaxiToWork()];
 
 class Client {
 
@@ -70,9 +90,10 @@ class Client {
     this.pos = pos;
     this.homeBuild = null;
     this.workBuild = null;
+    this.getOutTime = 0;
 
     this._state = "en casa";
-    const miFsm = new Fsm(this, states, "fsm1-cliente");
+    const miFsm = new Fsm(this, statesClient, "cliente");
     eventEmiter.register(miFsm);
   }
 
@@ -80,7 +101,7 @@ class Client {
     return this._id;
   }
 
-  state1() {
+  state() {
     return this._state;
   }
 
@@ -92,9 +113,17 @@ class Client {
     return this.workBuild;
   }
 
+  getGetOutTime() {
+    return this.getOutTime;
+  }
+
   setWorkHome(work, home) {
     this.workBuild = work;
     this.homeBuild = home;
+  }
+
+  setGetOutTime(time) {
+    this.getOutTime = time;
   }
 
   atHome() {
@@ -103,6 +132,14 @@ class Client {
 
   work() {
     this._state = "trabajando";
+  }
+
+  waitTaxiToWork() {
+    this._state = "esperando taxi para ir al trabajo"; 
+  }
+
+  waitTaxiToHome() {
+    this._state = "esperando taxi para ir a casa"; 
   }
 
   show() {

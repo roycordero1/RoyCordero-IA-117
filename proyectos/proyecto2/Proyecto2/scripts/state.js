@@ -3,10 +3,10 @@ Progra 2 - IA, Simulación de taxis Karma
 Roy Cordero Durán
 -------------------------------------------*/
 
-/**
-* Class State
-* For implement in the specific states
-*/
+/*-------------------------------------------
+// Class State
+// For implement in the specific states
+-------------------------------------------*/
 class State {
 
   constructor() {}
