@@ -65,6 +65,14 @@ class Application {
           document.getElementById("message").innerHTML = "Ruta a todos";
         this._rutaInstruction(instruction);
         break;
+      case "Clientes":
+        document.getElementById("message").innerHTML = "Clientes " + instruction[1];
+        this._clientesInstruction(instruction);
+        break;
+      case "Cliente":
+        document.getElementById("message").innerHTML = "Cliente de " + instruction[1] + " a " + instruction[2];
+        this._unClienteInstruction(instruction);
+        break;
   		default:
   			document.getElementById("message").innerHTML = "Comando no válido!"
   	}
@@ -83,6 +91,10 @@ class Application {
       return "Mostrar"
     else if (instr[0] == "ruta" && (instr.length==2 || instr.length==3) && (instr[1]=="on" || instr[1]=="off"))
       return "Ruta"
+    else if (instr[0] == "clientes" && instr.length == 2 && typeof parseInt(instr[1]) == "number")
+      return "Clientes"
+    else if (instr[0] == "cliente" && instr.length == 3)
+      return "Cliente"
   	return "Invalid";
   }
 
@@ -98,11 +110,14 @@ class Application {
   _createUpdateInterval(time) {
   	if (this._updateIntervalId != 0)
   		this._killInterval(this._updateIntervalId);
+
   	this._updateIntervalId = setInterval(() => {
 		  eventEmiter.update();
 		  eventEmiter.send({msg: "update"});
 		  app.printMap();
+      this.map.test1();
 		}, time);
+
   }
 
   _killInterval(id) {
@@ -150,5 +165,13 @@ class Application {
       eventEmiter.send({msg: "RutaOn", id: instruction[2]});
     else if (instruction[2] && instruction[1] == "off")
       eventEmiter.send({msg: "RutaOff", id: instruction[2]});
+  }
+
+  _clientesInstruction(instruction) {
+    this.map.addClients(instruction[1]);
+  }
+
+  _unClienteInstruction(instruction) {
+    this.map.addOneClient(instruction[1], instruction[2]);
   }
 }

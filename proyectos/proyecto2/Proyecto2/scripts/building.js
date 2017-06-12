@@ -41,7 +41,7 @@ class Building {
   }
 
   getSidewalks() {
-    return this.sidewalks; 
+    return this.sidewalks;
   }
 
   _setSidewalks() {

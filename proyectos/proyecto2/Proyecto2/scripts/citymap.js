@@ -229,6 +229,57 @@ class CityMap {
     }
   }
 
+  addClients(quantity) {
+    for (var i = 0; i<quantity; i++) {
+      var homeBuild = this._chooseRandomBuild("Home");
+      var workBuild = this._chooseRandomBuild("Work");
+      var random = Math.floor((Math.random() * 7));
+      var clientPosition = homeBuild.getSidewalks()[random];
+      var client = new Client(this.clients.length+1, clientPosition, this);
+      client.setWorkHome(workBuild, homeBuild);
+      this.clients.push(client);
+    }
+  }
+
+  _chooseRandomBuild(buildType) {
+    var buildings = [];
+    for(var i = 0; i<this.buildings.length; i++) {
+      if (this.buildings[i].getBuildingType() == buildType)
+        buildings.push(this.buildings[i])
+    }
+    var random = Math.floor((Math.random() * buildings.length));
+    return buildings[random];
+  }
+
+  addOneClient(originBuildName, destBuildName) {
+    var originBuild = this.whichBuild(originBuildName);
+    var destBuild = this.whichBuild(destBuildName);
+    var random = Math.floor((Math.random() * 7));
+    var clientPosition = originBuild.getSidewalks()[random];
+
+    if (originBuild.getBuildingType() == "Home" && destBuild.getBuildingType() == "Work") {
+      var client = new Client(this.clients.length+1, clientPosition, this);
+      client.setWorkHome(destBuild, originBuild);
+      this.clients.push(client);
+    }
+    else if (originBuild.getBuildingType() == "Work" && destBuild.getBuildingType() == "Home") {
+      var client = new Client(this.clients.length+1, clientPosition, this);
+      client.setWorkHome(originBuild, destBuild);
+      this.clients.push(client);
+    }
+  }
+
+  test1() {
+    for(var i = 0; i<this.clients.length; i++) {
+      var client = this.clients[i];
+      console.log("Cliente "+client.id()+": Home - "+client.getHomeBuild().getBuildingName()+" Work - "+client.getWorkBuild().getBuildingName())
+    }
+    for(var i = 0; i<this.buildings.length; i++) {
+      var build = this.buildings[i];
+      console.log("Edificio "+build.getBuildingName()+" de tipo "+build.getBuildingType())
+    }
+  }
+
   printMap() {
     var printableMatrix = "";
     for (var i = 0; i<this._matrix.length; i++) {
