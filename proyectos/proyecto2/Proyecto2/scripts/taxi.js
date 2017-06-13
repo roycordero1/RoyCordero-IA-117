@@ -53,8 +53,19 @@ class Walking extends State {
 
   onUpdate(eventEmitter, fsm) {
     console.log("[Walking] onUpdate");
-    fsm.owner().show();
-    fsm.owner().walk();
+    var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
+    var delayTime = fsm.owner().getDelayTime();
+    if (delayTime > 0) {
+      fsm.owner().showDelay();
+      if (updateTime > delayTime)
+        fsm.owner().setDelayTime(0);
+      else
+        fsm.owner().setDelayTime(delayTime - updateTime);
+    }
+    else {
+      fsm.owner().walk();
+      fsm.owner().show();
+    }
   }
 }
 
@@ -72,27 +83,38 @@ class Searching extends State {
 
   onUpdate(eventEmitter, fsm) {
     console.log("[Searching] onUpdate");
-    fsm.owner().show();
-    fsm.owner().walk();
-    var clientPosition = fsm.owner()._lookForClient();
-    if (clientPosition != "NoClient") {
-      var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
-      var destinationPosition = destinationBuild.getSidewalks()[fsm.owner()._chooseSidewalkDestination(destinationBuild)];
-      fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
-      var clientId = fsm.owner()._ownerMap.whichClient(clientPosition);
-      fsm.owner().setClientId(clientId);
-      fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
-
-      var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
-      fsm.owner().setRoute(route);
-
-      eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
-      console.log("destinationBuild " + destinationBuild.getBuildingName());
-      if (destinationBuild.getBuildingType() == "Home")
-        eventEmiter.send({msg: "Moving to home", id: "cliente" + (clientId+1)});
-      else if (destinationBuild.getBuildingType() == "Work")
-        eventEmiter.send({msg: "Moving to work", id: "cliente" + (clientId+1)});
+    var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
+    var delayTime = fsm.owner().getDelayTime();
+    if (delayTime > 0) {
+      fsm.owner().showDelay();
+      if (updateTime > delayTime)
+        fsm.owner().setDelayTime(0);
+      else
+        fsm.owner().setDelayTime(delayTime - updateTime);
     }
+    else {
+      fsm.owner().show();
+      fsm.owner().walk();
+
+      var clientPosition = fsm.owner()._lookForClient();
+      if (clientPosition != "NoClient") {
+
+        var destinationBuild = fsm.owner()._askClientDestinationBuild(clientPosition);
+        var destinationPosition = destinationBuild.getSidewalks()[fsm.owner()._chooseSidewalkDestination(destinationBuild)];
+        fsm.owner().setClientOriginDest(clientPosition, destinationPosition);
+        var clientId = fsm.owner()._ownerMap.whichClient(clientPosition);
+        fsm.owner().setClientId(clientId);
+        fsm.owner()._ownerMap.writeClientOriginDest(clientPosition, destinationPosition);
+
+        var route = fsm.owner()._chooseBetterRoute(destinationBuild);      
+        fsm.owner().setRoute(route);
+        eventEmiter.send({msg: "Transportar", id: "fsm1-taxi" + fsm.owner().id()});
+        if (destinationBuild.getBuildingType() == "Home")
+          eventEmiter.send({msg: "Moving to home", id: "cliente" + (clientId+1)});
+        else if (destinationBuild.getBuildingType() == "Work")
+          eventEmiter.send({msg: "Moving to work", id: "cliente" + (clientId+1)});
+      }
+    }  
   }
 
 }
@@ -115,11 +137,22 @@ class Parking extends State {
 
   onUpdate(eventEmitter, fsm) {
     console.log("[Parking] onUpdate");
-    fsm.owner().show();
-    if (fsm.owner().getRoute().length > 0)
-      fsm.owner().transport();
-    else
-      eventEmiter.send({msg: "Detener", id: "fsm1-taxi" + fsm.owner().id()});
+    var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
+    var delayTime = fsm.owner().getDelayTime();
+    if (delayTime > 0) {
+      fsm.owner().showDelay();
+      if (updateTime > delayTime)
+        fsm.owner().setDelayTime(0);
+      else
+        fsm.owner().setDelayTime(delayTime - updateTime);
+    }
+    else {
+      fsm.owner().show();
+      if (fsm.owner().getRoute().length > 0)
+        fsm.owner().transport();
+      else
+        eventEmiter.send({msg: "Detener", id: "fsm1-taxi" + fsm.owner().id()});
+    }    
   }
 
 }
@@ -137,11 +170,22 @@ class Transporting extends State {
 
   onUpdate(eventEmitter, fsm) {
     console.log("[Transporting] onUpdate");
-    fsm.owner().show();
-    if (fsm.owner().getRoute().length > 0)
-      fsm.owner().transport();
-    else
-      eventEmiter.send({msg: "ReanudarBuscar", id: "fsm1-taxi" + fsm.owner().id()});
+    var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
+    var delayTime = fsm.owner().getDelayTime();
+    if (delayTime > 0) {
+      fsm.owner().showDelay();
+      if (updateTime > delayTime)
+        fsm.owner().setDelayTime(0);
+      else
+        fsm.owner().setDelayTime(delayTime - updateTime);
+    }
+    else {
+      fsm.owner().show();
+      if (fsm.owner().getRoute().length > 0)
+        fsm.owner().transport();
+      else
+        eventEmiter.send({msg: "ReanudarBuscar", id: "fsm1-taxi" + fsm.owner().id()});
+    }    
   }
 
   onExit(eventEmitter, fsm) {
@@ -256,10 +300,11 @@ class Taxi {
     this.pos = [i, j];
     this.prevPos = [i, j];
     this.route = [];
+    this._lastRowMove = "down";
     this.originClientPos = [];
     this.destClientPos = [];
     this.clientId = -1;
-    this._lastRowMove = "down";
+    this.delayTime = 0;
 
     this._state1 = "detenido";
     this._state2 = "mostrarOff";
@@ -313,8 +358,16 @@ class Taxi {
     this.clientId = clientId;
   }
 
+  setDelayTime(time) {
+    this.delayTime = time;
+  }
+
   getRoute() {
     return this.route;
+  }
+
+  getDelayTime(time) {
+    return this.delayTime;
   }
 
   walk() {
@@ -331,6 +384,7 @@ class Taxi {
     var map = this._ownerMap.getMap();
     var taxiRow = this.pos[0];
     var taxiCol = this.pos[1];
+
     var isPrevPos1 = taxiRow+movesList[0][0] == this.prevPos[0] && taxiCol+movesList[0][1] == this.prevPos[1];
     var isPrevPos2 = taxiRow+movesList[1][0] == this.prevPos[0] && taxiCol+movesList[1][1] == this.prevPos[1];
     var isPrevPos3 = taxiRow+movesList[2][0] == this.prevPos[0] && taxiCol+movesList[2][1] == this.prevPos[1];
@@ -359,26 +413,22 @@ class Taxi {
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]++;
-        this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         break;
       case 2:
         this.prevPos[0] = this.pos[0];
         this.prevPos[1] = this.pos[1];
         this.pos[1]--;
-        this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         break;
       case 3:
         if (this._lastRowMove == "down") {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
-          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         else {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
-          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         break;
       case 4:
@@ -387,16 +437,17 @@ class Taxi {
           this.prevPos[1] = this.pos[1];
           this.pos[0]--;
           this._lastRowMove = "up"
-          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
         else {
           this.prevPos[0] = this.pos[0];
           this.prevPos[1] = this.pos[1];
           this.pos[0]++;
           this._lastRowMove = "down"
-          this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
         }
     }
+    this._ownerMap.moveTaxi(this.prevPos, this.pos, this);
+    if (this.state2() == "mostrarOn")
+      this._ownerMap.showPriority(this);
   }
 
   _lookForClient() {
@@ -528,5 +579,8 @@ class Taxi {
 
   show() {
     console.log("++++ Taxi " + this._id + " está " + this._state1 + ", " + this._state2 + " y " + this._state3);
+  }
+  showDelay() {
+    console.log("++++ Taxi " + this._id + " está en congestionamiento por " + this.delayTime/1000 + " segundos");
   }
 }

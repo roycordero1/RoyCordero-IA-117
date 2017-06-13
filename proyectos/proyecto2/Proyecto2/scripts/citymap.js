@@ -22,6 +22,7 @@ class Night extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Night] onUpdate");
     fsm.owner().addTime();
+    fsm.owner().updateStreetsCongestion();
     fsm.owner()._doClientsGetOut("Work");
     if (fsm.owner().getTime() >= fsm.owner().getTimePerDay())
       fsm.owner().setTime(fsm.owner().getTime()-fsm.owner().getTimePerDay());
@@ -46,6 +47,7 @@ class Day extends State {
   onUpdate(eventEmitter, fsm) {
     console.log("[Day] onUpdate");
     fsm.owner().addTime();
+    fsm.owner().updateStreetsCongestion();
     fsm.owner()._doClientsGetOut("Home");
     if (fsm.owner().getTime() > fsm.owner().getTimePerDay()*0.65)
       eventEmiter.send({msg: "Noche", id: "mapa1"});
@@ -66,6 +68,7 @@ class CityMap {
     this.taxis = []
     this.clients = []
     this.buildings = []
+    this.streets = new Map();
 
     this.timePerDay = 60000;
     this.timeRangetoGetOut = 0.10;
@@ -167,6 +170,12 @@ class CityMap {
     }
   }
 
+  updateStreetsCongestion() {
+    for (var [key, value] of this.streets) {
+      value.congestionDown();
+    }
+  }
+
   /*---------------------------------------------------------
   // Map initialization functions
   ---------------------------------------------------------*/
@@ -177,12 +186,12 @@ class CityMap {
 
   _createMatrix(fileMap) {
     var lines = fileMap.split('\n');
-    this._matrix = [[]];
+    this._matrix = [];
     for (var i = 0; i<lines.length; i++) {
+      this._matrix.push([]);
       for (var j = 0; j<lines[i].length; j++) {
         this._matrix[i].push(lines[i][j]);
-      }
-      this._matrix.push([]);
+      }      
     }
     this._createMapObjects();
   }
@@ -192,6 +201,9 @@ class CityMap {
       for (var j = 0; j<this._matrix[i].length; j++) {
         if (this._matrix[i][j] == " ") {
           this._matrix[i][j] = "&nbsp";
+          var street = new Street(this.streets.size+1, i, j, this);
+          var key = [i, j];
+          this.streets.set(key.join(','), street);
         }
         else {
           this._initMapObjects(i, j);
@@ -207,6 +219,10 @@ class CityMap {
     if (this._matrix[i][j] == "D") {
       var taxi = new Taxi(this.taxis.length+1, i, j, this);
       this.taxis.push(taxi);
+      var street = new Street(this.streets.size+1, i, j, this);
+      var key = [i, j];
+      this.streets.set(key.join(','), street);
+      this._modifyCongestion(null, [i, j], taxi);
     }
     else if (this._matrix[i][j] == "0") {
       var client = new Client(this.clients.length+1, [i, j], this);
@@ -279,13 +295,7 @@ class CityMap {
   ---------------------------------------------------------*/
 
   moveTaxi(oldPos, newPos, taxi) {
-    var taxiInOldPos = false;
-    for(var i=0; i<this.taxis.length; i++) {
-      if (this.taxis[i].pos[0] == oldPos[0] && this.taxis[i].pos[1] == oldPos[1]) {
-        taxiInOldPos = true;
-        break;
-      }
-    }
+    var taxiInOldPos = this._checkIfTaxiInOldPos(oldPos);
     if(!taxiInOldPos) {
       if(taxi.state2() == "mostrarOff")
         this._matrix[oldPos[0]][oldPos[1]] = "&nbsp";
@@ -293,6 +303,25 @@ class CityMap {
         this._matrix[oldPos[0]][oldPos[1]] = "+";
     }      
     this._matrix[newPos[0]][newPos[1]] = "D";
+    this._modifyCongestion(oldPos, newPos, taxi);
+  }
+
+  _checkIfTaxiInOldPos(oldPos) {
+    for(var i=0; i<this.taxis.length; i++) {
+      if (this.taxis[i].pos[0] == oldPos[0] && this.taxis[i].pos[1] == oldPos[1]) {
+        return true;
+      }
+    }
+  }
+
+  _modifyCongestion(oldPos, newPos, taxi) {
+    if (oldPos) {
+      this.streets.get(oldPos.join(',')).substractTaxi();
+    }
+    var congestionValue = this.streets.get(newPos.join(',')).addTaxi();
+    if (congestionValue > 0) {
+      taxi.setDelayTime(congestionValue*1000);
+    }
   }
 
   cleanShowRoad() {
@@ -307,7 +336,8 @@ class CityMap {
 
   writeRouteRoad(route) {
     for (var i = 0; i<route.length; i++) {
-      this._matrix[route[i][0]][route[i][1]] = "*";
+      if (this._matrix[route[i][0]][route[i][1]] != "D")
+        this._matrix[route[i][0]][route[i][1]] = "*";
     }
   }
 
@@ -347,6 +377,40 @@ class CityMap {
       this._matrix[pos[0]][pos[1]] = "|";
     else
       this._matrix[pos[0]][pos[1]] = "-";
+  }
+
+  showPriority(taxi) {
+    var priority = 0;
+    var elementsToIgnore = ["&nbsp", "+", "*", "1", "2", "3"];
+
+    if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]][taxi.pos[1]+1]) != -1) {
+      this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+      priority++;
+    }
+    if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]][taxi.pos[1]-1]) != -1) {
+      this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+      priority++;
+    }
+    if (taxi._lastRowMove == "down") {
+      if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]+1][taxi.pos[1]]) != -1) {
+        this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+        priority++;
+      }
+      if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]-1][taxi.pos[1]]) != -1) {
+        this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+        priority++;
+      }
+    }
+    else {
+      if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]-1][taxi.pos[1]+1]) != -1) {
+        this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+        priority++;
+      }
+      if (elementsToIgnore.indexOf(this._matrix[taxi.pos[0]+1][taxi.pos[1]-1]) != -1) {
+        this._matrix[taxi.pos[0]][taxi.pos[1]+1] = priority+1;
+        priority++;
+      }
+    }
   }
 
   /*---------------------------------------------------------
@@ -452,14 +516,23 @@ class CityMap {
   ---------------------------------------------------------*/
 
   test1() {
+    var x2 = [9, 11];
+    var street2 = this.streets.get(x2.join(','));
+    console.log("this.street.id 9 11 " + street2.id());
+    console.log("this.street.taxisQuant 9 11 " + street2.taxisQuant);
+    console.log("this.street.congestion 9 11 " + street2.congestion);
+  }
+
+  test2() {
+    for (var [key, value] of this.streets) {
+      console.log(key + " = " + value);
+    }
+
     for(var i = 0; i<this.clients.length; i++) {
       var client = this.clients[i];
       console.log("Cliente "+client.id()+": Tiempo - "+client.getGetOutTime());
       console.log("Tiempo "+this.getTime());
-    }    
-  }
-
-  test2() {
+    }
     for(var i = 0; i<this.buildings.length; i++) {
       var build = this.buildings[i];
       console.log("Edificio "+build.getBuildingName()+" de tipo "+build.getBuildingType())
