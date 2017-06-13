@@ -13,6 +13,15 @@ document.getElementById('file').onchange = (evt) => {
   reader.onload = function(progressEvent) {
     app.loadMap(this.result);
     app.printMap();
+    app.printCongestionMap();
   };
   reader.readAsText(file);
 };
+
+document.getElementById('cong-map').style.display = "none"
+function congMapShowHide() {
+  if (document.getElementById('cong-map').style.display === "none")
+    document.getElementById('cong-map').style.display = "block"
+  else
+    document.getElementById('cong-map').style.display = "none"
+}

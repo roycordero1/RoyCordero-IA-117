@@ -8,22 +8,22 @@ Roy Cordero Durán
 -------------------------------------------*/
 class Stopped extends State {
   accepts(event, current) {
-    console.log("[Stopped] accepts " + JSON.stringify(event));
+    //console.log("[Stopped] accepts " + JSON.stringify(event));
     return event.msg == "Detener";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Stopped] onEnter");
+    //console.log("[Stopped] onEnter");
     fsm.owner().setState("state1", "detenido");
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Stopped] onUpdate");
+    //console.log("[Stopped] onUpdate");
     fsm.owner().show();
   }
 
   onExit(eventEmitter, fsm) {
-    console.log("[Stopped] onExit");
+    //console.log("[Stopped] onExit");
     if(fsm._previous) {
       switch(fsm._previous.getClass()) {
         case Walking:
@@ -41,18 +41,18 @@ class Stopped extends State {
 
 class Walking extends State {
   accepts(event, current) {
-    console.log("[Walking] accepts " + JSON.stringify(event));
+    //console.log("[Walking] accepts " + JSON.stringify(event));
     return event.msg == "Pasear" && !(current instanceof Transporting);
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Walking] onEnter");
+    //console.log("[Walking] onEnter");
     fsm.owner().setState("state1", "paseando");
     this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Walking] onUpdate");
+    //console.log("[Walking] onUpdate");
     var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
     var delayTime = fsm.owner().getDelayTime();
     if (delayTime > 0) {
@@ -71,18 +71,18 @@ class Walking extends State {
 
 class Searching extends State {
   accepts(event, current) {
-    console.log("[Searching] accepts " + JSON.stringify(event));
+    //console.log("[Searching] accepts " + JSON.stringify(event));
     return (event.msg == "Buscar" && !(current instanceof Transporting)) || event.msg == "ReanudarBuscar";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Searching] onEnter");
+    //console.log("[Searching] onEnter");
     fsm.owner().setState("state1", "buscando");
     this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Searching] onUpdate");
+    //console.log("[Searching] onUpdate");
     var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
     var delayTime = fsm.owner().getDelayTime();
     if (delayTime > 0) {
@@ -121,12 +121,12 @@ class Searching extends State {
 
 class Parking extends State {
   accepts(event, current) {
-    console.log("[Parking] accepts " + JSON.stringify(event));
+    //console.log("[Parking] accepts " + JSON.stringify(event));
     return event.msg == "Parquear" && !(current instanceof Transporting);
   }
 
   onEnter(eventEmitter, fsm, event) {
-    console.log("[Parking] onEnter");
+    //console.log("[Parking] onEnter");
     fsm.owner().setState("state1", "parqueando");
     var destinationBuild = fsm.owner()._ownerMap.whichBuild(event.param1);
     if (destinationBuild) {
@@ -136,7 +136,7 @@ class Parking extends State {
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Parking] onUpdate");
+    //console.log("[Parking] onUpdate");
     var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
     var delayTime = fsm.owner().getDelayTime();
     if (delayTime > 0) {
@@ -159,17 +159,17 @@ class Parking extends State {
 
 class Transporting extends State {
   accepts(event, current) {
-    console.log("[Transporting] accepts " + JSON.stringify(event));
+    //console.log("[Transporting] accepts " + JSON.stringify(event));
     return event.msg == "Transportar";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Transporting] onEnter");
+    //console.log("[Transporting] onEnter");
     fsm.owner().setState("state1", "transportando");
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Transporting] onUpdate");
+    //console.log("[Transporting] onUpdate");
     var updateTime = fsm.owner()._ownerMap.getTimeUpdate();
     var delayTime = fsm.owner().getDelayTime();
     if (delayTime > 0) {
@@ -189,7 +189,7 @@ class Transporting extends State {
   }
 
   onExit(eventEmitter, fsm) {
-    console.log("[Transporting] onExit");
+    //console.log("[Transporting] onExit");
     fsm.owner()._ownerMap.unwriteClientOriginDest(fsm.owner().originClientPos, fsm.owner().destClientPos);
     fsm.owner().setClientOriginDest([], []);
     var client = fsm.owner()._ownerMap.clients[fsm.owner().clientId];
@@ -212,35 +212,35 @@ class Transporting extends State {
 -------------------------------------------*/
 class showOff extends State {
   accepts(event, current) {
-    console.log("[showOff] accepts " + JSON.stringify(event));
+    //console.log("[showOff] accepts " + JSON.stringify(event));
     return event.msg == "MostrarOff";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[showOff] onEnter");
+    //console.log("[showOff] onEnter");
     fsm.owner().setState("state2", "mostrarOff");
     fsm.owner()._ownerMap.cleanShowRoad();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[showOff] onUpdate");
+    //console.log("[showOff] onUpdate");
     //fsm.owner().show();
   }
 }
 
 class showOn extends State {
   accepts(event, current) {
-    console.log("[showOn] accepts " + JSON.stringify(event));
+    //console.log("[showOn] accepts " + JSON.stringify(event));
     return event.msg == "MostrarOn";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[showOn] onEnter");
+    //console.log("[showOn] onEnter");
     fsm.owner().setState("state2", "mostrarOn");
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[showOn] onUpdate");
+    //console.log("[showOn] onUpdate");
     //fsm.owner().show();
   }
 }
@@ -250,35 +250,35 @@ class showOn extends State {
 -------------------------------------------*/
 class routeOff extends State {
   accepts(event, current) {
-    console.log("[routeOff] accepts " + JSON.stringify(event));
+    //console.log("[routeOff] accepts " + JSON.stringify(event));
     return event.msg == "RutaOff";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[routeOff] onEnter");
+    //console.log("[routeOff] onEnter");
     fsm.owner().setState("state3", "routeOff");
     fsm.owner()._ownerMap.cleanRouteRoad();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[routeOff] onUpdate");
+    //console.log("[routeOff] onUpdate");
     //fsm.owner().show();
   }
 }
 
 class routeOn extends State {
   accepts(event, current) {
-    console.log("[routeOn] accepts " + JSON.stringify(event));
+    //console.log("[routeOn] accepts " + JSON.stringify(event));
     return event.msg == "RutaOn";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[routeOn] onEnter");
+    //console.log("[routeOn] onEnter");
     fsm.owner().setState("state3", "routeOn");
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[routeOn] onUpdate");
+    //console.log("[routeOn] onUpdate");
     fsm.owner()._ownerMap.writeRouteRoad(fsm.owner().getRoute());
     //fsm.owner().show();
   }

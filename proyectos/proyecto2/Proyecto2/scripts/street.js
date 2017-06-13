@@ -40,7 +40,7 @@ class Street {
   addTaxi() {
     this.taxisQuant = this.taxisQuant+1;
     if (this.taxisQuant > 1) {
-      this.congestion = this.taxisQuant*0.25
+      this.congestion = this.taxisQuant*1
       return this.congestion;
     }
     else
@@ -53,7 +53,7 @@ class Street {
 
   congestionDown() {
     if (this.taxisQuant == 1 && this.congestion>0)
-      this.congestion = (this.congestion-0.1).toFixed(2);
+      this.congestion = this.congestion-1
   }
 
 }

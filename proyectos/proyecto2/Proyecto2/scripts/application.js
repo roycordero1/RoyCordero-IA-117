@@ -21,6 +21,10 @@ class Application {
   	this.map.printMap();
   }
 
+  printCongestionMap() {
+    this.map.printCongestionMap();
+  }
+
   checkInstruction() {
   	var inputInstruction = document.getElementById("input").value;
   	var instruction = inputInstruction.split(" ");
@@ -128,7 +132,7 @@ class Application {
 		  eventEmiter.update();
 		  eventEmiter.send({msg: "update"});
 		  app.printMap();
-      this.map.test1();
+      app.printCongestionMap();
 		}, time);
 
   }

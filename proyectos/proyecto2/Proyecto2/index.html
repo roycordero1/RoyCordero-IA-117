@@ -10,16 +10,21 @@
     <h1> Bienvenido! </h1>
     <p>Selecciona un archivo para cargar el mapa</p>
     <input type="file" name="file" id="file">
+    <p id="demo"></p>
     <p>Ejecute instrucciones aquí</p>
     <input id="input">
     <button type="button" onclick="app.checkInstruction()">Ejecutar</button>
     <p id="message"></p>
+    <p></p>
+    <button type="button" onclick="congMapShowHide()" class="button">Mapa de congestionamiento</button>
     <p></p>
     <p id="map" class="map"></p>
     <p></p>
     <p id="builds" class="builds"></p>
     <p></p>
     <p id="time" class="time"></p>
+    <p></p>
+    <p id="cong-map" class="cong-map"></p>
   </body>
   <script data-main="scripts/main" src="scripts/event-emiter.js"></script>
   <script data-main="scripts/main" src="scripts/fsm.js"></script>

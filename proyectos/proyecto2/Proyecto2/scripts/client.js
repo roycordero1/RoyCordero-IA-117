@@ -8,104 +8,104 @@ Roy Cordero Durán
 -------------------------------------------*/
 class InHome extends State {
   accepts(event, current) {
-    console.log("[InHome] accepts " + JSON.stringify(event));
+    //console.log("[InHome] accepts " + JSON.stringify(event));
     return event.msg == "Encasa" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[InHome] onEnter");
+    //console.log("[InHome] onEnter");
     fsm.owner().atHome();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[InHome] onUpdate");
+    //console.log("[InHome] onUpdate");
     fsm.owner().show();
   }
 }
 
 class Working extends State {
   accepts(event, current) {
-    console.log("[Working] accepts " + JSON.stringify(event));
+    //console.log("[Working] accepts " + JSON.stringify(event));
     return event.msg == "Trabajar" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Working] onEnter");
+    //console.log("[Working] onEnter");
     fsm.owner().work();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Working] onUpdate");
+    //console.log("[Working] onUpdate");
     fsm.owner().show();
   }
 }
 
 class WaitingTaxiToHome extends State {
   accepts(event, current) {
-    console.log("[WaitingTaxiToHome] accepts " + JSON.stringify(event));
+    //console.log("[WaitingTaxiToHome] accepts " + JSON.stringify(event));
     return event.msg == "Wait taxi to home" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[WaitingTaxiToHome] onEnter");
+    //console.log("[WaitingTaxiToHome] onEnter");
     fsm.owner().waitTaxiToHome();
     fsm.owner().setGetOutTime(0);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[WaitingTaxiToHome] onUpdate");
+    //console.log("[WaitingTaxiToHome] onUpdate");
     fsm.owner().show();
   }
 }
 
 class WaitingTaxiToWork extends State {
   accepts(event, current) {
-    console.log("[WaitingTaxiToWork] accepts " + JSON.stringify(event));
+    //console.log("[WaitingTaxiToWork] accepts " + JSON.stringify(event));
     return event.msg == "Wait taxi to work" && (!(current instanceof MovingToHome) || !(current instanceof MovingToWork));
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[WaitingTaxiToWork] onEnter");
+    //console.log("[WaitingTaxiToWork] onEnter");
     fsm.owner().waitTaxiToWork();
     fsm.owner().setGetOutTime(0);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[WaitingTaxiToWork] onUpdate");
+    //console.log("[WaitingTaxiToWork] onUpdate");
     fsm.owner().show();
   }
 }
 
 class MovingToHome extends State {
   accepts(event, current) {
-    console.log("[MovingToHome] accepts " + JSON.stringify(event));
+    //console.log("[MovingToHome] accepts " + JSON.stringify(event));
     return event.msg == "Moving to home";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[MovingToHome] onEnter");
+    //console.log("[MovingToHome] onEnter");
     fsm.owner().moveToHome();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[MovingToHome] onUpdate");
+    //console.log("[MovingToHome] onUpdate");
     fsm.owner().show();
   }
 }
 
 class MovingToWork extends State {
   accepts(event, current) {
-    console.log("[MovingToWork] accepts " + JSON.stringify(event));
+    //console.log("[MovingToWork] accepts " + JSON.stringify(event));
     return event.msg == "Moving to work";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[MovingToWork] onEnter");
+    //console.log("[MovingToWork] onEnter");
     fsm.owner().moveToWork();
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[MovingToWork] onUpdate");
+    //console.log("[MovingToWork] onUpdate");
     fsm.owner().show();
   }
 }

@@ -8,19 +8,19 @@ Roy Cordero Durán
 -------------------------------------------*/
 class Night extends State {
   accepts(event, current) {
-    console.log("[Night] accepts " + JSON.stringify(event));
+    //console.log("[Night] accepts " + JSON.stringify(event));
     return event.msg == "Noche";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Night] onEnter");
+    //console.log("[Night] onEnter");
     fsm.owner().noche();
     fsm.owner().substractTime();
     this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Night] onUpdate");
+    //console.log("[Night] onUpdate");
     fsm.owner().addTime();
     fsm.owner().updateStreetsCongestion();
     fsm.owner()._doClientsGetOut("Work");
@@ -33,19 +33,19 @@ class Night extends State {
 
 class Day extends State {
   accepts(event, current) {
-    console.log("[Day] accepts " + JSON.stringify(event));
+    //console.log("[Day] accepts " + JSON.stringify(event));
     return event.msg == "Dia";
   }
 
   onEnter(eventEmitter, fsm) {
-    console.log("[Day] onEnter");
+    //console.log("[Day] onEnter");
     fsm.owner().dia();
     fsm.owner().substractTime();
     this.onUpdate(eventEmitter, fsm);
   }
 
   onUpdate(eventEmitter, fsm) {
-    console.log("[Day] onUpdate");
+    //console.log("[Day] onUpdate");
     fsm.owner().addTime();
     fsm.owner().updateStreetsCongestion();
     fsm.owner()._doClientsGetOut("Home");
@@ -65,6 +65,7 @@ class CityMap {
   constructor(id) {
     this._id = id;
     this._matrix = [[""]];
+    this._congestionMatrix = [];
     this.taxis = []
     this.clients = []
     this.buildings = []
@@ -265,7 +266,7 @@ class CityMap {
   _checkBuildinClientIs(pos) {
     for(var i = 0; i<this.buildings.length; i++) {
       for(var j = 0; j<this.buildings[i].sidewalks.length; j++) {
-        if (this.buildings[i].sidewalks[j][0] == pos[0] && this.buildings[i].sidewalks[j][0] == pos[0])
+        if (this.buildings[i].sidewalks[j][0] == pos[0] && this.buildings[i].sidewalks[j][1] == pos[1])
           return i;
       }
     }
@@ -320,7 +321,7 @@ class CityMap {
     }
     var congestionValue = this.streets.get(newPos.join(',')).addTaxi();
     if (congestionValue > 0) {
-      taxi.setDelayTime(congestionValue*1000);
+      taxi.setDelayTime(congestionValue*500);
     }
   }
 
@@ -512,45 +513,6 @@ class CityMap {
   }
 
   /*---------------------------------------------------------
-  // Testing functions
-  ---------------------------------------------------------*/
-
-  test1() {
-    var x2 = [9, 11];
-    var street2 = this.streets.get(x2.join(','));
-    console.log("this.street.id 9 11 " + street2.id());
-    console.log("this.street.taxisQuant 9 11 " + street2.taxisQuant);
-    console.log("this.street.congestion 9 11 " + street2.congestion);
-  }
-
-  test2() {
-    for (var [key, value] of this.streets) {
-      console.log(key + " = " + value);
-    }
-
-    for(var i = 0; i<this.clients.length; i++) {
-      var client = this.clients[i];
-      console.log("Cliente "+client.id()+": Tiempo - "+client.getGetOutTime());
-      console.log("Tiempo "+this.getTime());
-    }
-    for(var i = 0; i<this.buildings.length; i++) {
-      var build = this.buildings[i];
-      console.log("Edificio "+build.getBuildingName()+" de tipo "+build.getBuildingType())
-    }
-    console.log("Buildings")
-    for(var i = 0; i<this.buildings.length; i++) {
-      console.log(this.buildings[i].id() + " " + this.buildings[i].getBuildingType() + " " + this.buildings[i].buildName);
-    }
-    console.log("Clients")
-    for(var j = 0; j<this.clients.length; j++) {
-      var a = this._matrix[this.clients[j].pos[0]][this.clients[j].pos[1]];
-      var b = this._matrix[this.clients[j].home[0]][this.clients[j].home[1]];
-      var c = this._matrix[this.clients[j].work[0]][this.clients[j].work[1]];
-      console.log(this.clients[j].id() + " " + a + " " + b + " " + c);
-    }
-  }
-
-  /*---------------------------------------------------------
   // Print in browser functions
   ---------------------------------------------------------*/
 
@@ -562,6 +524,35 @@ class CityMap {
     document.getElementById("map").innerHTML = printableMatrix;
     this._printBuilds();
     this._printTimes();
+  }
+
+  printCongestionMap() {
+    var map = this._copyToCongestionMatrix();
+    var printableMatrix = "";
+    for (var i = 0; i<map.length; i++) {
+      printableMatrix = printableMatrix + map[i].join("")  + "<br>";
+    }
+    document.getElementById("cong-map").innerHTML = printableMatrix;
+  }
+
+  _copyToCongestionMatrix() {
+    var map = [];
+    for (var i = 0; i<this._matrix.length; i++) {
+      map.push([]);
+      for (var j = 0; j<this._matrix[i].length; j++) {
+        var isBuild = false;
+        if (i>0 && j>0)
+          var isBuild = this._matrix[i-1][j] == "-" && this._matrix[i+1][j] == "-" && this._matrix[i][j+1] == "|" && this._matrix[i][j-1] == "|";
+        if ((this._matrix[i][j] == "&nbsp" || this._matrix[i][j] == "D") && !isBuild) {
+          var key = [i, j];
+          map[i].push(this.streets.get(key.join(',')).congestion);
+        }
+        else {
+          map[i].push(this._matrix[i][j]);
+        }        
+      }
+    }
+    return map;
   }
 
   _printBuilds() {
